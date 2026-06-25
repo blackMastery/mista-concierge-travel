@@ -1,0 +1,85 @@
+import type { Metadata } from "next";
+import { ToursClient, type ClientTour } from "./ToursClient";
+import {
+  getAllTours,
+  getActivityTypes,
+  getDestinations,
+} from "@/lib/queries";
+import { getFavoriteSet } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Tours & Experiences",
+  description:
+    "Handcrafted journeys across the Caribbean's most beautiful islands. Filter to find the escape that fits you.",
+};
+
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=2000&q=80";
+
+export default async function ToursPage() {
+  const [tours, activityTypes, destinations, favs] = await Promise.all([
+    getAllTours(),
+    getActivityTypes(),
+    getDestinations(),
+    getFavoriteSet(),
+  ]);
+
+  const clientTours: ClientTour[] = tours.map((t) => ({
+    id: t.id,
+    slug: t.slug,
+    title: t.title,
+    location: t.location,
+    price_cents: t.price_cents,
+    rating: t.rating,
+    reviews_count: t.reviews_count,
+    duration_label: t.duration_label,
+    duration_days: t.duration_days,
+    badge: t.badge,
+    badge_color: t.badge_color,
+    card_image_url: t.card_image_url,
+    destName: t.destinations?.name ?? "",
+    acts: t.tour_activities
+      .map((ta) => ta.activity_types?.name)
+      .filter((n): n is string => !!n),
+    isFavorite: favs.has(t.id),
+  }));
+
+  // Destination filter options, in catalog order, with live counts.
+  const destOptions = destinations
+    .map((d) => ({
+      name: d.name,
+      count: clientTours.filter((t) => t.destName === d.name).length,
+    }))
+    .filter((d) => d.count > 0);
+
+  return (
+    <div className="min-h-screen">
+      {/* PAGE HEADER */}
+      <section
+        className="px-8 py-16 max-[640px]:px-[22px]"
+        style={{
+          background: `linear-gradient(120deg,rgba(15,42,58,0.74),rgba(15,76,117,0.62)),url('${HERO_IMAGE}') center/cover`,
+        }}
+      >
+        <div className="mx-auto max-w-[1280px]">
+          <span className="font-sans text-[13px] font-semibold uppercase tracking-[2px] text-gold">
+            Tours &amp; Experiences
+          </span>
+          <h1 className="m-0 mb-2 mt-2.5 font-serif text-[46px] font-bold leading-[1.1] text-sand max-[640px]:text-[34px]">
+            All Tours &amp; Experiences
+          </h1>
+          <p className="m-0 max-w-[560px] text-[16px] text-sand/[0.88]">
+            Handcrafted journeys across the Caribbean&apos;s most beautiful
+            islands. Filter to find the escape that fits you.
+          </p>
+        </div>
+      </section>
+
+      <ToursClient
+        tours={clientTours}
+        destOptions={destOptions}
+        activityTypes={activityTypes}
+      />
+    </div>
+  );
+}
