@@ -5,8 +5,9 @@ import { Carousel } from "@/components/tour/Carousel";
 import { Itinerary } from "@/components/tour/Itinerary";
 import { Gallery } from "@/components/tour/Gallery";
 import { BookingWidget } from "@/components/tour/BookingWidget";
-import { getTourBySlug, getTourSlugs } from "@/lib/queries";
+import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms } from "@/lib/queries";
 import { getFavoriteSet } from "@/lib/auth";
+import { formatPrice, formatDate } from "@/lib/format";
 
 export async function generateStaticParams() {
   const slugs = await getTourSlugs();
@@ -30,8 +31,16 @@ export default async function TourDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [tour, favs] = await Promise.all([getTourBySlug(slug), getFavoriteSet()]);
+  const [tour, favs, defaultTerms] = await Promise.all([
+    getTourBySlug(slug),
+    getFavoriteSet(),
+    getDefaultPaymentTerms(),
+  ]);
   if (!tour) notFound();
+
+  const terms = tour.payment_terms ?? defaultTerms;
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const depositOpen = !terms?.deadline || todayISO <= terms.deadline;
 
   const carouselImages = (
     tour.tour_images.filter((im) => im.in_carousel).map((im) => im.url)
@@ -105,6 +114,91 @@ export default async function TourDetailPage({
                 {tour.overview}
               </p>
             </>
+          )}
+
+          {/* PRICING */}
+          {tour.pricing && tour.pricing.occupancy.length > 0 && (
+            <div className="mb-9 rounded-2xl bg-white p-[26px] px-7 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <h3 className="m-0 mb-4 font-sans text-[16px] font-semibold text-ink">
+                Pricing
+              </h3>
+              <div className="flex flex-col">
+                {tour.pricing.occupancy.map((t, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0"
+                  >
+                    <span className="text-[14.5px] text-ink-soft">{t.label}</span>
+                    <span className="font-serif text-[16px] font-bold text-gold">
+                      {formatPrice(t.price_cents)}
+                      <span className="font-body text-[12px] font-normal text-muted-light">
+                        {" "}
+                        / person
+                      </span>
+                    </span>
+                  </div>
+                ))}
+                {tour.pricing.children.map((c) => (
+                  <div
+                    key={c.key}
+                    className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0"
+                  >
+                    <span className="text-[14.5px] text-ink-soft">{c.label}</span>
+                    <span className="font-serif text-[16px] font-bold text-gold">
+                      {formatPrice(c.price_cents)}
+                      <span className="font-body text-[12px] font-normal text-muted-light">
+                        {" "}
+                        / child
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PAYMENT TERMS */}
+          {terms && (
+            <div className="mb-9 rounded-2xl bg-white p-[26px] px-7 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <h3 className="m-0 mb-3 font-sans text-[16px] font-semibold text-ink">
+                Payment
+              </h3>
+              <p className="m-0 mb-3 text-[14.5px] leading-[1.65] text-ink-soft">
+                {terms.deadline && depositOpen ? (
+                  <>
+                    Deposit{" "}
+                    <strong className="text-ink">
+                      {formatPrice(terms.deposit_cents)}
+                    </strong>{" "}
+                    per {terms.deposit_per} to book by{" "}
+                    <strong className="text-ink">{formatDate(terms.deadline)}</strong>.{" "}
+                    {terms.final_note}
+                  </>
+                ) : terms.deadline && !depositOpen ? (
+                  <>{terms.final_note}</>
+                ) : (
+                  <>
+                    Deposit{" "}
+                    <strong className="text-ink">
+                      {formatPrice(terms.deposit_cents)}
+                    </strong>{" "}
+                    per {terms.deposit_per} to book. {terms.final_note}
+                  </>
+                )}
+              </p>
+              {terms.methods.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {terms.methods.map((m) => (
+                    <span
+                      key={m}
+                      className="rounded-md bg-green/[0.1] px-3 py-1.5 font-sans text-[12px] font-semibold text-green"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* HIGHLIGHTS */}
@@ -230,6 +324,9 @@ export default async function TourDetailPage({
             tourId={tour.id}
             basePriceCents={tour.price_cents}
             spotsLeft={tour.spots_left}
+            pricing={tour.pricing}
+            paymentTerms={terms}
+            depositOpen={depositOpen}
           />
           <div className="rounded-2xl bg-white p-[22px] px-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
             <h4 className="m-0 mb-3.5 font-sans text-[14px] font-semibold text-ink">

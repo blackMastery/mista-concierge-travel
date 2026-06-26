@@ -3,8 +3,10 @@ import {
   ObjectBlockEditor,
   ArrayBlockEditor,
   StringArrayEditor,
+  PaymentTermsBlockEditor,
 } from "@/components/admin/ContentEditors";
 import { getSiteContent } from "@/lib/queries";
+import type { PaymentTerms } from "@/lib/database.types";
 
 type Obj = Record<string, string>;
 
@@ -18,6 +20,16 @@ export default async function AdminContentPage() {
       <PageHeader title="Site content" subtitle="Edit the brand copy blocks shown across the marketing site." />
 
       <div className="flex flex-col gap-6">
+        <Card>
+          <h2 className="m-0 mb-1 font-serif text-[20px] font-semibold text-ink">Payment terms (default)</h2>
+          <p className="m-0 mb-4 text-[13px] text-muted-light">
+            Applies to every tour unless a tour overrides it on its own page.
+          </p>
+          <PaymentTermsBlockEditor
+            initial={get<PaymentTerms | null>("payment_terms", null)}
+          />
+        </Card>
+
         <Card>
           <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">Promo banner</h2>
           <ObjectBlockEditor

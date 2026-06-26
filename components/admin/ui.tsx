@@ -6,6 +6,31 @@ export const inputCls =
   "w-full rounded-lg border border-ink/15 bg-white px-3.5 py-2.5 font-body text-[14px] text-ink outline-none focus:border-green";
 export const labelCls =
   "mb-1.5 block font-sans text-[12.5px] font-semibold text-ink-soft";
+
+export function FormLabel({
+  children,
+  required,
+  htmlFor,
+}: {
+  children: ReactNode;
+  required?: boolean;
+  htmlFor?: string;
+}) {
+  return (
+    <label className={labelCls} htmlFor={htmlFor}>
+      {children}
+      {required && <span className="text-coral"> *</span>}
+    </label>
+  );
+}
+
+export function FormRequiredNote() {
+  return (
+    <p className="m-0 text-[13px] text-muted-light">
+      Fields marked with <span className="text-coral">*</span> are required.
+    </p>
+  );
+}
 export const btnPrimary =
   "inline-flex items-center justify-center rounded-lg bg-green px-5 py-2.5 font-sans text-[14px] font-semibold text-white transition-colors hover:bg-green-dark disabled:opacity-60";
 export const btnGhost =

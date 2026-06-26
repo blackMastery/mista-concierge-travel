@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { labelCls } from "@/components/admin/ui";
+import { FormLabel } from "@/components/admin/ui";
 
 // Uploads an image to the public "media" Storage bucket (admin RLS) and returns
 // its public URL. Also accepts a pasted URL as a fallback.
@@ -12,11 +12,13 @@ export function ImageUploader({
   onChange,
   folder = "uploads",
   label = "Image",
+  required = false,
 }: {
   value: string;
   onChange: (url: string) => void;
   folder?: string;
   label?: string;
+  required?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export function ImageUploader({
 
   return (
     <div>
-      <label className={labelCls}>{label}</label>
+      <FormLabel required={required}>{label}</FormLabel>
       <div className="flex items-start gap-4">
         <div className="relative h-[88px] w-[120px] shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-cream">
           {value ? (

@@ -16,6 +16,7 @@ import {
   getDestinationOptions,
   getActivityTypeOptions,
 } from "@/lib/admin-queries";
+import { getDefaultPaymentTerms } from "@/lib/queries";
 import { deleteTour } from "@/app/admin/actions";
 
 export default async function EditTourPage({
@@ -24,10 +25,11 @@ export default async function EditTourPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [tour, destinations, activityOptions] = await Promise.all([
+  const [tour, destinations, activityOptions, defaultPaymentTerms] = await Promise.all([
     getAdminTourById(id),
     getDestinationOptions(),
     getActivityTypeOptions(),
+    getDefaultPaymentTerms(),
   ]);
   if (!tour) notFound();
 
@@ -62,7 +64,12 @@ export default async function EditTourPage({
 
       <div className="flex flex-col gap-6">
         <Card>
-          <TourForm mode="edit" tour={tour} destinations={destinations} />
+          <TourForm
+            mode="edit"
+            tour={tour}
+            destinations={destinations}
+            defaultPaymentTerms={defaultPaymentTerms}
+          />
         </Card>
 
         <TourActivitiesEditor

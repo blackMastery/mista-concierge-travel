@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
-import type { Json } from "@/lib/database.types";
+import type { Json, TourPricing, PaymentTerms } from "@/lib/database.types";
 
 export type Result = { ok: boolean; error?: string };
 
@@ -37,6 +37,8 @@ export type TourInput = {
   spots_left: number | null;
   booked_last_24h: number | null;
   sort_order: number;
+  pricing: TourPricing | null;
+  payment_terms: PaymentTerms | null;
 };
 
 export async function createTour(input: TourInput): Promise<void> {

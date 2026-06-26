@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/database.types";
 
 export type ActionResult = { ok: boolean; error?: string };
 
@@ -102,6 +103,7 @@ export type BookingInput = {
   travelers: number;
   insurance: boolean;
   totalCents: number;
+  pricingBreakdown?: unknown;
 };
 
 export async function createBookingRequest(
@@ -119,6 +121,7 @@ export async function createBookingRequest(
     travelers: input.travelers,
     insurance: input.insurance,
     total_cents: input.totalCents,
+    pricing_breakdown: (input.pricingBreakdown ?? null) as Json,
     contact_email: user?.email ?? null,
   });
   if (error) return { ok: false, error: "Could not submit your request." };

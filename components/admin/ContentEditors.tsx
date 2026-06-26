@@ -2,8 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { inputCls, labelCls, btnPrimary, btnDanger, btnGhost } from "@/components/admin/ui";
+import {
+  PaymentTermsForm,
+  DEFAULT_PAYMENT_TERMS,
+} from "@/components/admin/TourPricingFields";
 import { updateSiteContent } from "@/app/admin/actions";
-import type { Json } from "@/lib/database.types";
+import type { Json, PaymentTerms } from "@/lib/database.types";
 
 type Field = { name: string; label: string; textarea?: boolean };
 
@@ -194,6 +198,39 @@ export function StringArrayEditor({
         onSave={() =>
           start(async () => {
             await updateSiteContent(contentKey, items.filter((x) => x.trim()) as Json);
+            setSaved(true);
+          })
+        }
+      />
+    </div>
+  );
+}
+
+// Global default payment terms (structured), saved to site_content "payment_terms".
+export function PaymentTermsBlockEditor({
+  initial,
+}: {
+  initial: PaymentTerms | null;
+}) {
+  const [terms, setTerms] = useState<PaymentTerms>(initial ?? DEFAULT_PAYMENT_TERMS);
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
+
+  return (
+    <div>
+      <PaymentTermsForm
+        value={terms}
+        onChange={(v) => {
+          setSaved(false);
+          setTerms(v);
+        }}
+      />
+      <SaveBar
+        pending={pending}
+        saved={saved}
+        onSave={() =>
+          start(async () => {
+            await updateSiteContent("payment_terms", terms as unknown as Json);
             setSaved(true);
           })
         }

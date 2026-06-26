@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { ImageUploader } from "@/components/admin/ImageUploader";
-import { inputCls, labelCls, btnPrimary } from "@/components/admin/ui";
+import { inputCls, FormLabel, FormRequiredNote, btnPrimary } from "@/components/admin/ui";
 import {
   createDestination,
   updateDestination,
@@ -15,6 +15,7 @@ import {
   type TeamInput,
 } from "@/app/admin/actions";
 import type { Destination, Testimonial, TeamMember } from "@/lib/database.types";
+import { slugify } from "@/lib/format";
 
 function Saved({ msg }: { msg: string | null }) {
   return msg ? <span className="text-[13px] text-green">{msg}</span> : null;
@@ -42,6 +43,7 @@ export function DestinationForm({
     sort_order: String(destination?.sort_order ?? 0),
   });
   const [msg, setMsg] = useState<string | null>(null);
+  const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [pending, start] = useTransition();
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) =>
     setF((s) => ({ ...s, [k]: v }));
@@ -73,18 +75,29 @@ export function DestinationForm({
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
+      <FormRequiredNote />
       <div className="grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
-        <div><label className={labelCls}>Name</label><input className={inputCls} value={f.name} onChange={(e) => set("name", e.target.value)} required /></div>
-        <div><label className={labelCls}>Slug</label><input className={inputCls} value={f.slug} onChange={(e) => set("slug", e.target.value)} required /></div>
-        <div><label className={labelCls}>Tag</label><input className={inputCls} value={f.tag} onChange={(e) => set("tag", e.target.value)} placeholder="Adventure & Luxury" required /></div>
-        <div><label className={labelCls}>Sort order</label><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
-        <div><label className={labelCls}>Avg. temperature</label><input className={inputCls} value={f.avg_temp} onChange={(e) => set("avg_temp", e.target.value)} placeholder="82°F" /></div>
-        <div><label className={labelCls}>Best season</label><input className={inputCls} value={f.best_season} onChange={(e) => set("best_season", e.target.value)} placeholder="Nov–Apr" /></div>
-        <div><label className={labelCls}>Signature tours (count)</label><input className={inputCls} type="number" value={f.signature_tours} onChange={(e) => set("signature_tours", e.target.value)} /></div>
+        <div><FormLabel required>Name</FormLabel><input className={inputCls} value={f.name} onChange={(e) => {
+          const name = e.target.value;
+          setF((s) => ({
+            ...s,
+            name,
+            ...(mode === "new" && !slugTouched ? { slug: slugify(name) } : {}),
+          }));
+        }} required /></div>
+        <div><FormLabel required>Slug</FormLabel><input className={inputCls} value={f.slug} onChange={(e) => {
+          setSlugTouched(true);
+          set("slug", e.target.value);
+        }} required /></div>
+        <div><FormLabel required>Tag</FormLabel><input className={inputCls} value={f.tag} onChange={(e) => set("tag", e.target.value)} placeholder="Adventure & Luxury" required /></div>
+        <div><FormLabel>Sort order</FormLabel><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
+        <div><FormLabel>Avg. temperature</FormLabel><input className={inputCls} value={f.avg_temp} onChange={(e) => set("avg_temp", e.target.value)} placeholder="82°F" /></div>
+        <div><FormLabel>Best season</FormLabel><input className={inputCls} value={f.best_season} onChange={(e) => set("best_season", e.target.value)} placeholder="Nov–Apr" /></div>
+        <div><FormLabel>Signature tours (count)</FormLabel><input className={inputCls} type="number" value={f.signature_tours} onChange={(e) => set("signature_tours", e.target.value)} /></div>
       </div>
-      <div><label className={labelCls}>Short description</label><textarea className={`${inputCls} min-h-[70px] resize-y`} value={f.description} onChange={(e) => set("description", e.target.value)} required /></div>
-      <div><label className={labelCls}>Long description (featured island)</label><textarea className={`${inputCls} min-h-[110px] resize-y`} value={f.long_description} onChange={(e) => set("long_description", e.target.value)} /></div>
-      <ImageUploader label="Hero image" folder="destinations" value={f.hero_image_url} onChange={(url) => set("hero_image_url", url)} />
+      <div><FormLabel required>Short description</FormLabel><textarea className={`${inputCls} min-h-[70px] resize-y`} value={f.description} onChange={(e) => set("description", e.target.value)} required /></div>
+      <div><FormLabel>Long description (featured island)</FormLabel><textarea className={`${inputCls} min-h-[110px] resize-y`} value={f.long_description} onChange={(e) => set("long_description", e.target.value)} /></div>
+      <ImageUploader label="Hero image" folder="destinations" value={f.hero_image_url} onChange={(url) => set("hero_image_url", url)} required />
       <label className="flex items-center gap-2.5 text-[14px] text-ink">
         <input type="checkbox" className="h-[18px] w-[18px] accent-green" checked={f.is_featured} onChange={(e) => set("is_featured", e.target.checked)} />
         Featured island (shown large on the Destinations page)
@@ -140,12 +153,13 @@ export function TestimonialForm({
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <div><label className={labelCls}>Quote</label><textarea className={`${inputCls} min-h-[90px] resize-y`} value={f.quote} onChange={(e) => set("quote", e.target.value)} required /></div>
+      <FormRequiredNote />
+      <div><FormLabel required>Quote</FormLabel><textarea className={`${inputCls} min-h-[90px] resize-y`} value={f.quote} onChange={(e) => set("quote", e.target.value)} required /></div>
       <div className="grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
-        <div><label className={labelCls}>Name</label><input className={inputCls} value={f.name} onChange={(e) => set("name", e.target.value)} required /></div>
-        <div><label className={labelCls}>Initials</label><input className={inputCls} value={f.initials} onChange={(e) => set("initials", e.target.value)} placeholder="JR" required /></div>
-        <div><label className={labelCls}>Trip</label><input className={inputCls} value={f.trip} onChange={(e) => set("trip", e.target.value)} placeholder="Barbados Platinum Coast" required /></div>
-        <div><label className={labelCls}>Sort order</label><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
+        <div><FormLabel required>Name</FormLabel><input className={inputCls} value={f.name} onChange={(e) => set("name", e.target.value)} required /></div>
+        <div><FormLabel required>Initials</FormLabel><input className={inputCls} value={f.initials} onChange={(e) => set("initials", e.target.value)} placeholder="JR" required /></div>
+        <div><FormLabel required>Trip</FormLabel><input className={inputCls} value={f.trip} onChange={(e) => set("trip", e.target.value)} placeholder="Barbados Platinum Coast" required /></div>
+        <div><FormLabel>Sort order</FormLabel><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
       </div>
       <div className="flex items-center gap-3">
         <button type="submit" className={btnPrimary} disabled={pending}>{pending ? "Saving…" : mode === "new" ? "Create testimonial" : "Save changes"}</button>
@@ -196,13 +210,14 @@ export function TeamForm({
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
+      <FormRequiredNote />
       <div className="grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
-        <div><label className={labelCls}>Name</label><input className={inputCls} value={f.name} onChange={(e) => set("name", e.target.value)} required /></div>
-        <div><label className={labelCls}>Role</label><input className={inputCls} value={f.role} onChange={(e) => set("role", e.target.value)} placeholder="Lead Concierge" required /></div>
-        <div><label className={labelCls}>Sort order</label><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
+        <div><FormLabel required>Name</FormLabel><input className={inputCls} value={f.name} onChange={(e) => set("name", e.target.value)} required /></div>
+        <div><FormLabel required>Role</FormLabel><input className={inputCls} value={f.role} onChange={(e) => set("role", e.target.value)} placeholder="Lead Concierge" required /></div>
+        <div><FormLabel>Sort order</FormLabel><input className={inputCls} type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} /></div>
       </div>
-      <div><label className={labelCls}>Bio</label><textarea className={`${inputCls} min-h-[90px] resize-y`} value={f.bio} onChange={(e) => set("bio", e.target.value)} required /></div>
-      <ImageUploader label="Photo" folder="team" value={f.photo_url} onChange={(url) => set("photo_url", url)} />
+      <div><FormLabel required>Bio</FormLabel><textarea className={`${inputCls} min-h-[90px] resize-y`} value={f.bio} onChange={(e) => set("bio", e.target.value)} required /></div>
+      <ImageUploader label="Photo" folder="team" value={f.photo_url} onChange={(url) => set("photo_url", url)} required />
       <div className="flex items-center gap-3">
         <button type="submit" className={btnPrimary} disabled={pending}>{pending ? "Saving…" : mode === "new" ? "Create member" : "Save changes"}</button>
         <Saved msg={msg} />

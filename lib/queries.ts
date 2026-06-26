@@ -9,6 +9,7 @@ import type {
   TourHighlight,
   TourItinerary,
   TourInclusion,
+  PaymentTerms,
 } from "@/lib/database.types";
 
 export type TourWithActivities = Tour & {
@@ -57,6 +58,7 @@ export async function getAllTours(): Promise<TourWithActivities[]> {
     const { data } = await supabase
       .from("tours")
       .select(TOUR_LIST_SELECT)
+      .eq("is_published", true)
       .order("sort_order", { ascending: false });
     return (data as unknown as TourWithActivities[]) ?? [];
   } catch {
@@ -174,6 +176,23 @@ export async function getSiteContent(): Promise<Record<string, unknown>> {
     return map;
   } catch {
     return {};
+  }
+}
+
+// Global default payment terms (site_content key "payment_terms"). Tours with a
+// non-null payment_terms override this; null falls back to these defaults.
+export async function getDefaultPaymentTerms(): Promise<PaymentTerms | null> {
+  if (!hasEnv) return null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("site_content")
+      .select("value")
+      .eq("key", "payment_terms")
+      .maybeSingle();
+    return (data?.value as PaymentTerms | undefined) ?? null;
+  } catch {
+    return null;
   }
 }
 

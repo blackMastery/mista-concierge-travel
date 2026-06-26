@@ -9,6 +9,33 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+// --- Pricing & payment terms (stored as jsonb; amounts in cents = GYD × 100) -
+
+export type OccupancyTier = {
+  occupants: number;
+  label: string;
+  price_cents: number; // per person
+};
+
+export type ChildTier = {
+  key: string;
+  label: string;
+  price_cents: number; // per child
+};
+
+export type TourPricing = {
+  occupancy: OccupancyTier[];
+  children: ChildTier[];
+};
+
+export type PaymentTerms = {
+  deposit_cents: number;
+  deposit_per: "person" | "booking";
+  deadline: string | null; // ISO date; deposit window closes after this date
+  final_note: string;
+  methods: string[];
+};
+
 // --- Standalone row shapes -------------------------------------------------
 
 export type DestinationRow = {
@@ -53,6 +80,8 @@ export type TourRow = {
   spots_left: number | null;
   booked_last_24h: number | null;
   sort_order: number;
+  pricing: TourPricing | null;
+  payment_terms: PaymentTerms | null;
   created_at: string;
 }
 
@@ -151,6 +180,7 @@ export type BookingRequestRow = {
   travelers: number;
   insurance: boolean;
   total_cents: number;
+  pricing_breakdown: Json | null;
   status: "pending" | "confirmed" | "cancelled";
   contact_name: string | null;
   contact_email: string | null;
