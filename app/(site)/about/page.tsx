@@ -45,7 +45,7 @@ export default async function AboutPage() {
         <div className="grid grid-cols-2 items-center gap-14 max-[920px]:grid-cols-1">
           <Reveal>
             <Eyebrow className="!text-[12px]">Our Story</Eyebrow>
-            <h2 className="m-0 mb-5 mt-3 font-serif text-[36px] font-bold leading-[1.15] text-ink">
+            <h2 className="m-0 mb-5 mt-3 font-serif text-[36px] font-bold leading-[1.15] text-ink max-[640px]:text-[28px]">
               Born on the islands, built for travelers
             </h2>
             <p className="m-0 mb-[18px] text-[15.5px] leading-[1.8] text-ink-soft">
@@ -75,7 +75,7 @@ export default async function AboutPage() {
         <div className="mx-auto max-w-[1280px] px-8 py-[84px] max-[640px]:px-[22px]">
           <Reveal className="mx-auto mb-[50px] max-w-[620px] text-center">
             <Eyebrow>What We Stand For</Eyebrow>
-            <h2 className="m-0 mt-3 font-serif text-[38px] font-bold text-sand">
+            <h2 className="m-0 mt-3 font-serif text-[38px] font-bold text-sand max-[640px]:text-[28px]">
               Our core values
             </h2>
           </Reveal>
@@ -101,7 +101,7 @@ export default async function AboutPage() {
       <section className="mx-auto max-w-[1280px] px-8 py-[84px] max-[640px]:px-[22px]">
         <Reveal className="mx-auto mb-[50px] max-w-[620px] text-center">
           <Eyebrow>The People</Eyebrow>
-          <h2 className="m-0 mt-3 font-serif text-[38px] font-bold text-ink">
+          <h2 className="m-0 mt-3 font-serif text-[38px] font-bold text-ink max-[640px]:text-[28px]">
             Meet our team
           </h2>
         </Reveal>

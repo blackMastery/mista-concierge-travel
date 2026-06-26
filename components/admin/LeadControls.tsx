@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { btnGhost, btnDanger } from "@/components/admin/ui";
+import { btnGhost } from "@/components/admin/ui";
+import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import {
   updateBookingStatus,
   setMessageStatus,
@@ -89,8 +90,7 @@ export function MessageActions({
   const router = useRouter();
   const [pending, start] = useTransition();
 
-  function act(fn: () => Promise<unknown>, confirmText?: string) {
-    if (confirmText && !confirm(confirmText)) return;
+  function act(fn: () => Promise<unknown>) {
     start(async () => {
       await fn();
       router.refresh();
@@ -109,30 +109,32 @@ export function MessageActions({
           Archive
         </button>
       )}
-      <button className={btnDanger} disabled={pending} onClick={() => act(() => deleteMessage(id), "Delete this message?")}>
-        Delete
-      </button>
+      <ConfirmButton
+        title="Delete message?"
+        confirmText="This contact submission will be permanently removed."
+        onConfirm={async () => {
+          await deleteMessage(id);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }
 
 export function SubscriberDelete({ id }: { id: string }) {
   const router = useRouter();
-  const [pending, start] = useTransition();
+
   return (
-    <button
-      className={btnDanger}
-      disabled={pending}
-      onClick={() => {
-        if (!confirm("Remove this subscriber?")) return;
-        start(async () => {
-          await deleteSubscriber(id);
-          router.refresh();
-        });
+    <ConfirmButton
+      title="Remove subscriber?"
+      confirmText="This email will be removed from the newsletter list."
+      onConfirm={async () => {
+        await deleteSubscriber(id);
+        router.refresh();
       }}
     >
       Remove
-    </button>
+    </ConfirmButton>
   );
 }
 
@@ -171,8 +173,7 @@ export function ReviewControls({
   const router = useRouter();
   const [pending, start] = useTransition();
 
-  function act(fn: () => Promise<unknown>, confirmText?: string) {
-    if (confirmText && !confirm(confirmText)) return;
+  function act(fn: () => Promise<unknown>) {
     start(async () => {
       await fn();
       router.refresh();
@@ -184,9 +185,14 @@ export function ReviewControls({
       <button className={btnGhost} disabled={pending} onClick={() => act(() => setReviewPublished(id, !isPublished))}>
         {isPublished ? "Unpublish" : "Publish"}
       </button>
-      <button className={btnDanger} disabled={pending} onClick={() => act(() => deleteReview(id), "Delete this review?")}>
-        Delete
-      </button>
+      <ConfirmButton
+        title="Delete review?"
+        confirmText="This review will be permanently removed from the tour."
+        onConfirm={async () => {
+          await deleteReview(id);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

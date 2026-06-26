@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { inputCls, labelCls, btnPrimary, btnDanger, btnGhost } from "@/components/admin/ui";
+import { inputCls, labelCls, btnPrimary, btnGhost } from "@/components/admin/ui";
+import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import {
   PaymentTermsForm,
   DEFAULT_PAYMENT_TERMS,
@@ -128,7 +129,13 @@ export function ArrayBlockEditor({
               ))}
             </div>
             <div className="mt-2.5">
-              <button className={btnDanger} onClick={() => removeRow(i)}>Remove</button>
+              <ConfirmButton
+                title="Remove item?"
+                confirmText="This content block will be removed. Save to apply the change."
+                onConfirm={() => removeRow(i)}
+              >
+                Remove
+              </ConfirmButton>
             </div>
           </div>
         ))}
@@ -175,15 +182,16 @@ export function StringArrayEditor({
                 setItems((s) => s.map((x, idx) => (idx === i ? e.target.value : x)));
               }}
             />
-            <button
-              className={btnDanger}
-              onClick={() => {
+            <ConfirmButton
+              title="Remove item?"
+              confirmText="This item will be removed from the list. Save to apply the change."
+              onConfirm={() => {
                 setSaved(false);
                 setItems((s) => s.filter((_, idx) => idx !== i));
               }}
             >
               Remove
-            </button>
+            </ConfirmButton>
           </div>
         ))}
       </div>

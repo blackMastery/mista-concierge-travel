@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
 import type { Json, TourPricing, PaymentTerms } from "@/lib/database.types";
+import { tourPricingToRows } from "@/lib/tour-pricing";
+import { sendBookingStatusEmail } from "@/lib/email";
 
 export type Result = { ok: boolean; error?: string };
 
@@ -41,15 +43,37 @@ export type TourInput = {
   payment_terms: PaymentTerms | null;
 };
 
+async function syncTourPricing(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tourId: string,
+  pricing: TourPricing | null,
+) {
+  const { error: delErr } = await supabase
+    .from("tour_pricing")
+    .delete()
+    .eq("tour_id", tourId);
+  if (delErr) throw new Error(delErr.message);
+
+  if (!pricing) return;
+
+  const rows = tourPricingToRows(tourId, pricing);
+  if (!rows.length) return;
+
+  const { error } = await supabase.from("tour_pricing").insert(rows);
+  if (error) throw new Error(error.message);
+}
+
 export async function createTour(input: TourInput): Promise<void> {
   await requireAdmin();
   const supabase = await createClient();
+  const { pricing, ...tourFields } = input;
   const { data, error } = await supabase
     .from("tours")
-    .insert({ ...input, is_published: false })
+    .insert({ ...tourFields, is_published: false })
     .select("id")
     .single();
   if (error) throw new Error(error.message);
+  await syncTourPricing(supabase, data.id, pricing);
   revalidatePublic();
   revalidatePath("/admin/tours");
   redirect(`/admin/tours/${data.id}`);
@@ -58,8 +82,14 @@ export async function createTour(input: TourInput): Promise<void> {
 export async function updateTour(id: string, input: TourInput): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
-  const { error } = await supabase.from("tours").update(input).eq("id", id);
+  const { pricing, ...tourFields } = input;
+  const { error } = await supabase.from("tours").update(tourFields).eq("id", id);
   if (error) return { ok: false, error: error.message };
+  try {
+    await syncTourPricing(supabase, id, pricing);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to save pricing" };
+  }
   revalidatePublic();
   revalidatePath(`/tours/${input.slug}`);
   revalidatePath(`/admin/tours/${id}`);
@@ -403,13 +433,60 @@ export async function updateBookingStatus(
 ): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("booking_requests")
+    .select("status, reference_code, contact_name, contact_email, tours(title)")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("booking_requests")
     .update({ status })
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  const row = existing as {
+    status: string;
+    reference_code: string;
+    contact_name: string | null;
+    contact_email: string | null;
+    tours: { title: string } | null;
+  } | null;
+
+  if (
+    row &&
+    row.status !== status &&
+    (status === "confirmed" || status === "cancelled") &&
+    row.contact_email
+  ) {
+    void sendBookingStatusEmail({
+      referenceCode: row.reference_code,
+      tourTitle: row.tours?.title ?? "Tour",
+      contactName: row.contact_name ?? "Traveler",
+      contactEmail: row.contact_email,
+      status,
+    }).catch((err) => console.error("[booking] status email failed:", err));
+  }
+
   revalidatePath("/admin/bookings");
+  revalidatePath(`/admin/bookings/${id}`);
   revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function updateBookingNotes(
+  id: string,
+  adminNotes: string,
+): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("booking_requests")
+    .update({ admin_notes: adminNotes.trim() || null })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/admin/bookings/${id}`);
   return { ok: true };
 }
 

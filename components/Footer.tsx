@@ -14,7 +14,7 @@ export async function Footer() {
 
   return (
     <footer className="border-t border-gold/20 bg-[#0A0D0C] font-body text-[#C9CFCB]">
-      <div className="mx-auto max-w-[1280px] px-8 pt-16">
+      <div className="mx-auto max-w-[1280px] px-8 pt-16 max-[640px]:px-[22px]">
         <div className="grid grid-cols-1 gap-12 min-[541px]:grid-cols-2 min-[861px]:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
             <div className="mb-[18px] flex items-center gap-3">

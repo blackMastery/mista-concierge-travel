@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { withAssembledPricing } from "@/lib/tour-pricing";
 import type {
   Tour,
   Destination,
@@ -8,6 +9,7 @@ import type {
   TourHighlight,
   TourItinerary,
   TourInclusion,
+  TourPricingRow,
 } from "@/lib/database.types";
 
 // All admin reads run as the signed-in admin; RLS grants full visibility
@@ -20,9 +22,12 @@ export async function getAdminTours(): Promise<AdminTourRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("tours")
-    .select("*, destinations(name)")
+    .select("*, destinations(name), tour_pricing(*)")
     .order("sort_order", { ascending: false });
-  return (data as unknown as AdminTourRow[]) ?? [];
+  type Raw = Omit<AdminTourRow, "pricing"> & { tour_pricing: TourPricingRow[] };
+  return ((data as unknown as Raw[]) ?? []).map(
+    (row) => withAssembledPricing(row) as AdminTourRow,
+  );
 }
 
 export type AdminTourDetail = Tour & {
@@ -38,12 +43,13 @@ export async function getAdminTourById(id: string): Promise<AdminTourDetail | nu
   const { data } = await supabase
     .from("tours")
     .select(
-      "*, tour_images(*), tour_highlights(*), tour_itinerary(*), tour_inclusions(*), tour_activities(activity_type_id)",
+      "*, tour_images(*), tour_highlights(*), tour_itinerary(*), tour_inclusions(*), tour_activities(activity_type_id), tour_pricing(*)",
     )
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
-  const d = data as unknown as AdminTourDetail;
+  type Raw = Omit<AdminTourDetail, "pricing"> & { tour_pricing: TourPricingRow[] };
+  const d = withAssembledPricing(data as unknown as Raw) as AdminTourDetail;
   d.tour_images = [...d.tour_images].sort((a, b) => a.position - b.position);
   d.tour_highlights = [...d.tour_highlights].sort((a, b) => a.position - b.position);
   d.tour_itinerary = [...d.tour_itinerary].sort((a, b) => a.day_number - b.day_number);
@@ -138,7 +144,13 @@ export type AdminBooking = {
   insurance: boolean;
   total_cents: number;
   status: "pending" | "confirmed" | "cancelled";
+  contact_name: string | null;
   contact_email: string | null;
+  contact_phone: string | null;
+  reference_code: string;
+  special_requests: string | null;
+  admin_notes: string | null;
+  pricing_breakdown: import("@/lib/database.types").Json | null;
   created_at: string;
   tours: { title: string; slug: string } | null;
 };
@@ -150,6 +162,18 @@ export async function getAdminBookings(): Promise<AdminBooking[]> {
     .select("*, tours(title, slug)")
     .order("created_at", { ascending: false });
   return (data as unknown as AdminBooking[]) ?? [];
+}
+
+export async function getAdminBookingById(
+  id: string,
+): Promise<AdminBooking | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("booking_requests")
+    .select("*, tours(title, slug)")
+    .eq("id", id)
+    .maybeSingle();
+  return (data as unknown as AdminBooking) ?? null;
 }
 
 export type AdminMessage = {

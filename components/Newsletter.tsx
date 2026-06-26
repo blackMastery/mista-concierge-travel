@@ -28,7 +28,10 @@ export function Newsletter() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex gap-2.5 rounded-xl bg-white p-2">
+    <form
+      onSubmit={onSubmit}
+      className="flex flex-col gap-2.5 rounded-xl bg-white p-2 min-[481px]:flex-row"
+    >
       <input
         type="email"
         value={email}
@@ -40,7 +43,7 @@ export function Newsletter() {
       <button
         type="submit"
         disabled={pending}
-        className="whitespace-nowrap rounded-lg bg-green px-[22px] py-3 font-sans text-[14px] font-semibold text-white transition-colors hover:bg-green-dark disabled:opacity-70"
+        className="w-full whitespace-nowrap rounded-lg bg-green px-[22px] py-3 font-sans text-[14px] font-semibold text-white transition-colors hover:bg-green-dark disabled:opacity-70 min-[481px]:w-auto"
       >
         {pending ? "…" : "Subscribe"}
       </button>

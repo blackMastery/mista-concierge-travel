@@ -33,7 +33,11 @@ export default async function AdminDestinationsPage() {
                   <Link href={`/admin/destinations/${d.id}`} className="rounded-lg border border-ink/15 px-3.5 py-2 font-sans text-[13px] font-semibold text-ink no-underline hover:border-green hover:text-green">
                     Edit
                   </Link>
-                  <ConfirmButton action={deleteDestination.bind(null, d.id)} confirmText={`Delete "${d.name}"?`} />
+                  <ConfirmButton
+                    action={deleteDestination.bind(null, d.id)}
+                    title="Delete destination?"
+                    confirmText={`"${d.name}" will be permanently removed.`}
+                  />
                 </div>
               </div>
             ))}

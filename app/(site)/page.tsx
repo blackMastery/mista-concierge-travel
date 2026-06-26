@@ -12,6 +12,7 @@ import {
   getSiteContent,
 } from "@/lib/queries";
 import { getFavoriteSet } from "@/lib/auth";
+import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
 import type { StatItem, PillarItem } from "@/lib/format";
 
 const HERO_IMAGE =
@@ -91,7 +92,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
         <Reveal className="mx-auto mb-[54px] max-w-[620px] text-center">
           <Eyebrow>Curated Experiences</Eyebrow>
-          <h2 className="m-0 mb-3.5 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink">
+          <h2 className="m-0 mb-3.5 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
             Featured Tours
           </h2>
           <p className="m-0 text-[16px] leading-[1.6] text-muted">
@@ -102,7 +103,14 @@ export default async function HomePage() {
         <div className="grid grid-cols-3 gap-7 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1">
           {tours.map((t, i) => (
             <Reveal key={t.id} delay={i * 0.08}>
-              <TourCard tour={t} isFavorite={favs.has(t.id)} />
+              <TourCard
+                tour={{
+                  ...t,
+                  price_cents: tourDisplayPriceCents(t),
+                  pricePerPerson: !tourHasOccupancyPricing(t),
+                }}
+                isFavorite={favs.has(t.id)}
+              />
             </Reveal>
           ))}
         </div>
@@ -121,11 +129,11 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
           <Reveal className="mx-auto mb-14 max-w-[620px] text-center">
             <Eyebrow>The Mista Difference</Eyebrow>
-            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-sand">
+            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-sand max-[640px]:text-[30px]">
               Why Choose Mista Concierge
             </h2>
           </Reveal>
-          <div className="grid grid-cols-4 gap-6 max-[980px]:grid-cols-2 max-[640px]:grid-cols-2">
+          <div className="grid grid-cols-4 gap-6 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4">
             {pillars.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.07}>
                 <div className="rounded-2xl border border-sand/[0.14] bg-sand/[0.07] p-8 px-[26px] text-center transition-colors hover:bg-sand/[0.12]">
@@ -150,7 +158,7 @@ export default async function HomePage() {
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-[560px]">
             <Eyebrow>Where We Go</Eyebrow>
-            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink">
+            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
               Discover the islands
             </h2>
           </div>
@@ -192,7 +200,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
           <Reveal className="mx-auto mb-[54px] max-w-[620px] text-center">
             <Eyebrow>Traveler Stories</Eyebrow>
-            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink">
+            <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
               Loved by adventurers worldwide
             </h2>
           </Reveal>
@@ -230,7 +238,7 @@ export default async function HomePage() {
         >
           <div className="flex flex-col items-center gap-8 px-6 py-10 text-center min-[981px]:flex-row min-[981px]:justify-between min-[981px]:gap-10 min-[981px]:px-14 min-[981px]:py-[52px] min-[981px]:text-left">
             <div className="flex-1">
-              <h2 className="m-0 mb-2.5 font-serif text-[32px] font-bold leading-[1.2] text-sand">
+              <h2 className="m-0 mb-2.5 font-serif text-[32px] font-bold leading-[1.2] text-sand max-[640px]:text-[26px]">
                 Get exclusive travel inspiration
               </h2>
               <p className="m-0 text-[15px] leading-[1.6] text-sand/85">

@@ -22,7 +22,13 @@ export default async function EditDestinationPage({
       </Link>
       <PageHeader
         title={destination.name}
-        action={<ConfirmButton action={deleteDestination.bind(null, destination.id)} confirmText={`Delete "${destination.name}"?`} />}
+        action={
+          <ConfirmButton
+            action={deleteDestination.bind(null, destination.id)}
+            title="Delete destination?"
+            confirmText={`"${destination.name}" will be permanently removed.`}
+          />
+        }
       />
       <Card>
         <DestinationForm mode="edit" destination={destination} />

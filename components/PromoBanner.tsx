@@ -32,7 +32,7 @@ export function PromoBanner({ content }: { content: PromoBannerContent }) {
           transition={{ duration: 0.25 }}
           className="overflow-hidden"
         >
-          <div className="relative flex items-center justify-center gap-3.5 bg-blue px-4 py-[11px] pr-11 font-sans text-[13.5px] font-medium text-sand">
+          <div className="relative flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 bg-blue px-4 py-3 pr-14 text-center font-sans text-[13.5px] font-medium text-sand max-[640px]:text-left">
             <span>
               <strong className="text-gold">{content.strong}</strong>{" "}
               {content.text}
@@ -46,7 +46,7 @@ export function PromoBanner({ content }: { content: PromoBannerContent }) {
             <button
               onClick={close}
               aria-label="Dismiss"
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 border-none bg-transparent text-[18px] leading-none text-sand"
+              className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-none bg-transparent text-[20px] leading-none text-sand"
             >
               ×
             </button>

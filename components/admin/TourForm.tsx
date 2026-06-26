@@ -9,6 +9,7 @@ import {
 } from "@/components/admin/TourPricingFields";
 import { createTour, updateTour, type TourInput } from "@/app/admin/actions";
 import type { Tour, TourPricing, PaymentTerms } from "@/lib/database.types";
+import { slugify } from "@/lib/format";
 
 type Opt = { id: string; name: string };
 
@@ -71,6 +72,7 @@ export function TourForm({
       : empty,
   );
   const [msg, setMsg] = useState<string | null>(null);
+  const [slugTouched, setSlugTouched] = useState(mode === "edit");
   const [pending, start] = useTransition();
 
   function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
@@ -128,11 +130,32 @@ export function TourForm({
       <div className="grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
         <div>
           <FormLabel required>Title</FormLabel>
-          <input className={inputCls} value={f.title} onChange={(e) => set("title", e.target.value)} required />
+          <input
+            className={inputCls}
+            value={f.title}
+            onChange={(e) => {
+              const title = e.target.value;
+              setF((s) => ({
+                ...s,
+                title,
+                ...(mode === "new" && !slugTouched ? { slug: slugify(title) } : {}),
+              }));
+            }}
+            required
+          />
         </div>
         <div>
           <FormLabel required>Slug</FormLabel>
-          <input className={inputCls} value={f.slug} onChange={(e) => set("slug", e.target.value)} placeholder="st-lucia-piton-escape" required />
+          <input
+            className={inputCls}
+            value={f.slug}
+            onChange={(e) => {
+              setSlugTouched(true);
+              set("slug", e.target.value);
+            }}
+            placeholder="st-lucia-piton-escape"
+            required
+          />
         </div>
         <div>
           <FormLabel required>Destination</FormLabel>
@@ -161,7 +184,7 @@ export function TourForm({
             <input className={inputCls} type="number" min="0" value={f.priceDollars} onChange={(e) => set("priceDollars", e.target.value)} required />
           )}
           <p className="mt-1 text-[12px] text-muted-light">
-            Shown on tour cards. Auto-set to your lowest occupancy rate when detailed pricing is on.
+            Shown on tour cards. Auto-set to your lowest occupancy tier total when detailed pricing is on.
           </p>
         </div>
         <div>

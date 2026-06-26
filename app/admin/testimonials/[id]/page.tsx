@@ -22,7 +22,13 @@ export default async function EditTestimonialPage({
       </Link>
       <PageHeader
         title={testimonial.name}
-        action={<ConfirmButton action={deleteTestimonial.bind(null, testimonial.id)} confirmText="Delete this testimonial?" />}
+        action={
+          <ConfirmButton
+            action={deleteTestimonial.bind(null, testimonial.id)}
+            title="Delete testimonial?"
+            confirmText="This testimonial will be permanently removed."
+          />
+        }
       />
       <Card>
         <TestimonialForm mode="edit" testimonial={testimonial} />

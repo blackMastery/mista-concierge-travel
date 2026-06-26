@@ -5,9 +5,12 @@ import { Carousel } from "@/components/tour/Carousel";
 import { Itinerary } from "@/components/tour/Itinerary";
 import { Gallery } from "@/components/tour/Gallery";
 import { BookingWidget } from "@/components/tour/BookingWidget";
+import { MobileBookBar } from "@/components/tour/MobileBookBar";
 import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms } from "@/lib/queries";
 import { getFavoriteSet } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatDate } from "@/lib/format";
+import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
 
 export async function generateStaticParams() {
   const slugs = await getTourSlugs();
@@ -31,10 +34,31 @@ export default async function TourDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [tour, favs, defaultTerms] = await Promise.all([
+  const [tour, favs, defaultTerms, userContext] = await Promise.all([
     getTourBySlug(slug),
     getFavoriteSet(),
     getDefaultPaymentTerms(),
+    (async () => {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return { email: null, name: null };
+      try {
+        const supabase = await createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return { email: null, name: null };
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        return {
+          email: user.email ?? null,
+          name: (profile as { full_name: string | null } | null)?.full_name ?? null,
+        };
+      } catch {
+        return { email: null, name: null };
+      }
+    })(),
   ]);
   if (!tour) notFound();
 
@@ -53,11 +77,16 @@ export default async function TourDetailPage({
   const included = tour.tour_inclusions.filter((i) => i.kind === "included");
   const excluded = tour.tour_inclusions.filter((i) => i.kind === "excluded");
 
+  const pricedOccupancy =
+    tour.pricing?.occupancy.filter((t) => t.price_cents > 0) ?? [];
+  const pricedChildren =
+    tour.pricing?.children.filter((c) => c.price_cents > 0) ?? [];
+
   return (
     <div>
       {/* BREADCRUMB */}
       <div className="mx-auto max-w-[1280px] px-8 pt-[22px] max-[640px]:px-[22px]">
-        <div className="font-sans text-[13px] text-muted-light">
+        <div className="truncate font-sans text-[13px] text-muted-light">
           <Link href="/" className="text-muted-light no-underline">Home</Link> ·{" "}
           <Link href="/tours" className="text-muted-light no-underline">Tours</Link> ·{" "}
           <span className="text-green">{tour.title}</span>
@@ -75,7 +104,7 @@ export default async function TourDetailPage({
       </section>
 
       {/* MAIN GRID */}
-      <div className="mx-auto grid max-w-[1280px] grid-cols-[1fr_380px] items-start gap-12 px-8 pb-20 pt-10 max-[920px]:grid-cols-1 max-[640px]:px-[22px]">
+      <div className="mx-auto grid max-w-[1280px] grid-cols-[1fr_380px] items-start gap-12 px-8 pb-20 pt-10 max-[920px]:grid-cols-1 max-[920px]:pb-28 max-[640px]:px-[22px]">
         {/* LEFT */}
         <div>
           <span className="font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">
@@ -117,13 +146,13 @@ export default async function TourDetailPage({
           )}
 
           {/* PRICING */}
-          {tour.pricing && tour.pricing.occupancy.length > 0 && (
+          {(pricedOccupancy.length > 0 || pricedChildren.length > 0) && (
             <div className="mb-9 rounded-2xl bg-white p-[26px] px-7 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
               <h3 className="m-0 mb-4 font-sans text-[16px] font-semibold text-ink">
                 Pricing
               </h3>
               <div className="flex flex-col">
-                {tour.pricing.occupancy.map((t, i) => (
+                {pricedOccupancy.map((t, i) => (
                   <div
                     key={i}
                     className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0"
@@ -131,14 +160,10 @@ export default async function TourDetailPage({
                     <span className="text-[14.5px] text-ink-soft">{t.label}</span>
                     <span className="font-serif text-[16px] font-bold text-gold">
                       {formatPrice(t.price_cents)}
-                      <span className="font-body text-[12px] font-normal text-muted-light">
-                        {" "}
-                        / person
-                      </span>
                     </span>
                   </div>
                 ))}
-                {tour.pricing.children.map((c) => (
+                {pricedChildren.map((c) => (
                   <div
                     key={c.key}
                     className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0"
@@ -278,8 +303,10 @@ export default async function TourDetailPage({
           {/* REVIEWS */}
           {tour.reviews.length > 0 && (
             <>
-              <div className="mb-5 flex items-center justify-between">
-                <h2 className="m-0 font-serif text-[26px] font-semibold text-ink">Reviews</h2>
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                <h2 className="m-0 font-serif text-[26px] font-semibold text-ink max-[600px]:text-[22px]">
+                  Reviews
+                </h2>
                 <div className="flex items-center gap-2.5">
                   <span className="font-serif text-[32px] font-bold text-green">
                     {tour.rating.toFixed(1)}
@@ -319,7 +346,7 @@ export default async function TourDetailPage({
         </div>
 
         {/* RIGHT: BOOKING */}
-        <div className="sticky top-24 flex flex-col gap-[18px] max-[920px]:static">
+        <div id="booking-widget" className="sticky top-24 flex flex-col gap-[18px] max-[920px]:static">
           <BookingWidget
             tourId={tour.id}
             basePriceCents={tour.price_cents}
@@ -327,6 +354,8 @@ export default async function TourDetailPage({
             pricing={tour.pricing}
             paymentTerms={terms}
             depositOpen={depositOpen}
+            userEmail={userContext.email}
+            userName={userContext.name}
           />
           <div className="rounded-2xl bg-white p-[22px] px-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
             <h4 className="m-0 mb-3.5 font-sans text-[14px] font-semibold text-ink">
@@ -349,6 +378,15 @@ export default async function TourDetailPage({
           </div>
         </div>
       </div>
+
+      <MobileBookBar
+        priceLabel={
+          tourHasOccupancyPricing(tour)
+            ? `From ${formatPrice(tourDisplayPriceCents(tour))}`
+            : `${formatPrice(tour.price_cents)} / person`
+        }
+        spotsLeft={tour.spots_left}
+      />
     </div>
   );
 }

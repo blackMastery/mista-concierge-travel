@@ -5,8 +5,8 @@ import {
   labelCls,
   cardCls,
   btnGhost,
-  btnDanger,
 } from "@/components/admin/ui";
+import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { formatPrice, formatDate } from "@/lib/format";
 import type {
   TourPricing,
@@ -107,8 +107,9 @@ export function OccupancyPricingFields({
             Occupancy &amp; children pricing
           </h3>
           <p className="m-0 mt-1 text-[13px] text-muted-light">
-            Per-person rates by room occupancy, plus children tiers. Amounts in
-            GYD. Leave off to use the single starting price above.
+            Flat rates by room occupancy (total for that tier), plus per-child
+            add-ons. Amounts in GYD. Leave off to use the single starting price
+            above.
           </p>
         </div>
         <Toggle
@@ -122,7 +123,7 @@ export function OccupancyPricingFields({
         <div className="flex flex-col gap-5">
           <div>
             <h4 className="m-0 mb-2.5 font-sans text-[14px] font-semibold text-ink">
-              Room occupancy (price per person)
+              Room occupancy
             </h4>
             <div className="flex flex-col gap-3">
               {v.occupancy.map((t, i) => (
@@ -151,7 +152,7 @@ export function OccupancyPricingFields({
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Price / person (GYD)</label>
+                    <label className={labelCls}>Price for occupants (GYD)</label>
                     <input
                       className={inputCls}
                       type="number"
@@ -162,13 +163,13 @@ export function OccupancyPricingFields({
                       }
                     />
                   </div>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={() => removeOccupancy(i)}
+                  <ConfirmButton
+                    title="Remove tier?"
+                    confirmText="This occupancy tier will be removed from the pricing form."
+                    onConfirm={() => removeOccupancy(i)}
                   >
                     Remove
-                  </button>
+                  </ConfirmButton>
                 </div>
               ))}
             </div>
@@ -298,10 +299,10 @@ export function PaymentTermsForm({
                 value={m}
                 onChange={(e) => setMethod(i, e.target.value)}
               />
-              <button
-                type="button"
-                className={btnDanger}
-                onClick={() =>
+              <ConfirmButton
+                title="Remove payment method?"
+                confirmText="This payment method will be removed from the form."
+                onConfirm={() =>
                   onChange({
                     ...value,
                     methods: value.methods.filter((_, idx) => idx !== i),
@@ -309,7 +310,7 @@ export function PaymentTermsForm({
                 }
               >
                 Remove
-              </button>
+              </ConfirmButton>
             </div>
           ))}
         </div>

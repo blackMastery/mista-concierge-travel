@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ImageUploader } from "@/components/admin/ImageUploader";
-import { inputCls, labelCls, btnPrimary, btnDanger } from "@/components/admin/ui";
+import { ConfirmButton } from "@/components/admin/ConfirmButton";
+import { inputCls, labelCls, btnPrimary } from "@/components/admin/ui";
 import {
   addTourImage,
   deleteTourImage,
@@ -71,18 +72,17 @@ export function TourImagesEditor({
             <span className="rounded bg-ink/[0.06] px-2 py-0.5 text-[11px] text-muted">
               {im.in_carousel ? "carousel" : "gallery"}
             </span>
-            <button
-              className={btnDanger}
+            <ConfirmButton
+              title="Remove image?"
+              confirmText="This image will be removed from the tour gallery."
               disabled={pending}
-              onClick={() =>
-                start(async () => {
-                  await deleteTourImage(im.id);
-                  router.refresh();
-                })
-              }
+              onConfirm={async () => {
+                await deleteTourImage(im.id);
+                router.refresh();
+              }}
             >
               Remove
-            </button>
+            </ConfirmButton>
           </div>
         ))}
       </div>
@@ -133,18 +133,17 @@ export function TourHighlightsEditor({
         {highlights.map((h) => (
           <div key={h.id} className={rowCls}>
             <span className="flex-1 text-[14px] text-ink-soft">{h.text}</span>
-            <button
-              className={btnDanger}
+            <ConfirmButton
+              title="Remove highlight?"
+              confirmText="This highlight will be removed from the tour."
               disabled={pending}
-              onClick={() =>
-                start(async () => {
-                  await deleteHighlight(h.id);
-                  router.refresh();
-                })
-              }
+              onConfirm={async () => {
+                await deleteHighlight(h.id);
+                router.refresh();
+              }}
             >
               Remove
-            </button>
+            </ConfirmButton>
           </div>
         ))}
       </div>
@@ -198,18 +197,17 @@ export function TourItineraryEditor({
               <span className="flex-1 font-sans text-[14px] font-semibold text-ink">
                 {d.title}
               </span>
-              <button
-                className={btnDanger}
+              <ConfirmButton
+                title="Remove itinerary day?"
+                confirmText={`Day ${d.day_number} (${d.title}) will be permanently removed.`}
                 disabled={pending}
-                onClick={() =>
-                  start(async () => {
-                    await deleteItineraryDay(d.id);
-                    router.refresh();
-                  })
-                }
+                onConfirm={async () => {
+                  await deleteItineraryDay(d.id);
+                  router.refresh();
+                }}
               >
                 Remove
-              </button>
+              </ConfirmButton>
             </div>
             <p className="m-0 mt-1.5 text-[13px] leading-[1.6] text-muted">{d.body}</p>
           </div>
@@ -270,18 +268,17 @@ export function TourInclusionsEditor({
         <div key={i.id} className={rowCls}>
           <span className="text-green">{symbol}</span>
           <span className="flex-1 text-[14px] text-ink-soft">{i.text}</span>
-          <button
-            className={btnDanger}
+          <ConfirmButton
+            title="Remove item?"
+            confirmText={`"${i.text}" will be removed from the ${i.kind === "included" ? "included" : "not included"} list.`}
             disabled={pending}
-            onClick={() =>
-              start(async () => {
-                await deleteInclusion(i.id);
-                router.refresh();
-              })
-            }
+            onConfirm={async () => {
+              await deleteInclusion(i.id);
+              router.refresh();
+            }}
           >
             Remove
-          </button>
+          </ConfirmButton>
         </div>
       ))}
     </div>

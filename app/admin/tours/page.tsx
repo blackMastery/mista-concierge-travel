@@ -56,7 +56,8 @@ export default async function AdminToursPage() {
                   </Link>
                   <ConfirmButton
                     action={deleteTour.bind(null, t.id)}
-                    confirmText={`Delete "${t.title}"? This removes its images, itinerary and reviews.`}
+                    title="Delete tour?"
+                    confirmText={`"${t.title}" and all of its images, itinerary, and reviews will be permanently removed.`}
                   />
                 </div>
               </div>

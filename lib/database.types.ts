@@ -14,7 +14,7 @@ export type Json =
 export type OccupancyTier = {
   occupants: number;
   label: string;
-  price_cents: number; // per person
+  price_cents: number; // flat price for this occupancy tier
 };
 
 export type ChildTier = {
@@ -80,9 +80,19 @@ export type TourRow = {
   spots_left: number | null;
   booked_last_24h: number | null;
   sort_order: number;
-  pricing: TourPricing | null;
   payment_terms: PaymentTerms | null;
   created_at: string;
+}
+
+export type TourPricingRow = {
+  id: string;
+  tour_id: string;
+  kind: "occupancy" | "child";
+  occupants: number | null;
+  child_key: string | null;
+  label: string;
+  price_cents: number;
+  position: number;
 }
 
 export type TourActivityRow = {
@@ -185,6 +195,9 @@ export type BookingRequestRow = {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  reference_code: string;
+  special_requests: string | null;
+  admin_notes: string | null;
   created_at: string;
 }
 
@@ -230,6 +243,7 @@ export type Database = {
       tour_highlights: TableDef<TourHighlightRow>;
       tour_itinerary: TableDef<TourItineraryRow>;
       tour_inclusions: TableDef<TourInclusionRow>;
+      tour_pricing: TableDef<TourPricingRow>;
       reviews: TableDef<ReviewRow>;
       testimonials: TableDef<TestimonialRow>;
       team_members: TableDef<TeamMemberRow>;
@@ -251,7 +265,22 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      get_booking_status: {
+        Args: { p_reference: string; p_email: string };
+        Returns: {
+          reference_code: string;
+          tour_title: string;
+          tour_slug: string;
+          travel_date: string | null;
+          travelers: number;
+          total_cents: number;
+          status: string;
+          pricing_breakdown: Json | null;
+          created_at: string;
+        }[];
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };
@@ -260,7 +289,8 @@ export type Database = {
 // Convenience aliases used across the app
 export type Destination = DestinationRow;
 export type ActivityType = ActivityTypeRow;
-export type Tour = TourRow;
+/** Tour row with assembled occupancy/children pricing from tour_pricing relation. */
+export type Tour = TourRow & { pricing: TourPricing | null };
 export type TourImage = TourImageRow;
 export type TourHighlight = TourHighlightRow;
 export type TourItinerary = TourItineraryRow;

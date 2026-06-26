@@ -1,4 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  filterTours,
+  sortTours,
+  type TourFilters,
+} from "@/lib/tour-filters";
+import { withAssembledPricing } from "@/lib/tour-pricing";
 import type {
   Tour,
   Destination,
@@ -10,6 +16,7 @@ import type {
   TourItinerary,
   TourInclusion,
   PaymentTerms,
+  TourPricingRow,
 } from "@/lib/database.types";
 
 export type TourWithActivities = Tour & {
@@ -26,6 +33,14 @@ export type TourDetail = Tour & {
   reviews: Review[];
 };
 
+type RawTourList = Omit<TourWithActivities, "pricing"> & {
+  tour_pricing: TourPricingRow[];
+};
+
+function mapTourList(rows: RawTourList[]): TourWithActivities[] {
+  return rows.map((row) => withAssembledPricing(row) as TourWithActivities);
+}
+
 // True only when Supabase is configured. Lets pages render (empty) instead of
 // crashing the build before env vars are set.
 const hasEnv = !!(
@@ -34,7 +49,7 @@ const hasEnv = !!(
 );
 
 const TOUR_LIST_SELECT =
-  "*, destinations(name, slug), tour_activities(activity_types(name))";
+  "*, destinations(name, slug), tour_activities(activity_types(name)), tour_pricing(*)";
 
 export async function getFeaturedTours(): Promise<TourWithActivities[]> {
   if (!hasEnv) return [];
@@ -45,7 +60,7 @@ export async function getFeaturedTours(): Promise<TourWithActivities[]> {
       .select(TOUR_LIST_SELECT)
       .eq("is_featured", true)
       .order("sort_order", { ascending: false });
-    return (data as unknown as TourWithActivities[]) ?? [];
+    return mapTourList((data as unknown as RawTourList[]) ?? []);
   } catch {
     return [];
   }
@@ -60,10 +75,19 @@ export async function getAllTours(): Promise<TourWithActivities[]> {
       .select(TOUR_LIST_SELECT)
       .eq("is_published", true)
       .order("sort_order", { ascending: false });
-    return (data as unknown as TourWithActivities[]) ?? [];
+    return mapTourList((data as unknown as RawTourList[]) ?? []);
   } catch {
     return [];
   }
+}
+
+export async function getFilteredTours(
+  filters: TourFilters,
+  destSlugByName: Map<string, string>,
+  preloaded?: TourWithActivities[],
+): Promise<TourWithActivities[]> {
+  const all = preloaded ?? (await getAllTours());
+  return sortTours(filterTours(all, filters, destSlugByName), filters.sort);
 }
 
 export async function getTourSlugs(): Promise<string[]> {
@@ -84,18 +108,19 @@ export async function getTourBySlug(slug: string): Promise<TourDetail | null> {
     const { data } = await supabase
       .from("tours")
       .select(
-        "*, destinations(name, slug), tour_images(*), tour_highlights(*), tour_itinerary(*), tour_inclusions(*), reviews(*)",
+        "*, destinations(name, slug), tour_images(*), tour_highlights(*), tour_itinerary(*), tour_inclusions(*), reviews(*), tour_pricing(*)",
       )
       .eq("slug", slug)
       .maybeSingle();
     if (!data) return null;
 
-    const detail = data as unknown as TourDetail;
-    detail.tour_images = [...detail.tour_images].sort((a, b) => a.position - b.position);
-    detail.tour_highlights = [...detail.tour_highlights].sort((a, b) => a.position - b.position);
-    detail.tour_itinerary = [...detail.tour_itinerary].sort((a, b) => a.day_number - b.day_number);
-    detail.tour_inclusions = [...detail.tour_inclusions].sort((a, b) => a.position - b.position);
-    return detail;
+    const raw = data as unknown as TourDetail & { tour_pricing: TourPricingRow[] };
+    const assembled = withAssembledPricing(raw) as TourDetail;
+    assembled.tour_images = [...assembled.tour_images].sort((a, b) => a.position - b.position);
+    assembled.tour_highlights = [...assembled.tour_highlights].sort((a, b) => a.position - b.position);
+    assembled.tour_itinerary = [...assembled.tour_itinerary].sort((a, b) => a.day_number - b.day_number);
+    assembled.tour_inclusions = [...assembled.tour_inclusions].sort((a, b) => a.position - b.position);
+    return assembled;
   } catch {
     return null;
   }

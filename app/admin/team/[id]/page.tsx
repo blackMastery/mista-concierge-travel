@@ -22,7 +22,13 @@ export default async function EditTeamMemberPage({
       </Link>
       <PageHeader
         title={member.name}
-        action={<ConfirmButton action={deleteTeamMember.bind(null, member.id)} confirmText={`Delete ${member.name}?`} />}
+        action={
+          <ConfirmButton
+            action={deleteTeamMember.bind(null, member.id)}
+            title="Delete team member?"
+            confirmText={`${member.name} will be permanently removed from the team page.`}
+          />
+        }
       />
       <Card>
         <TeamForm mode="edit" member={member} />

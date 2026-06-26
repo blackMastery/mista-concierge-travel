@@ -39,7 +39,7 @@ export function Gallery({ images }: { images: string[] }) {
             <button
               onClick={() => setActive(-1)}
               aria-label="Close"
-              className="absolute right-7 top-6 flex h-[46px] w-[46px] items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white"
+              className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:right-7 min-[641px]:top-6 min-[641px]:h-[46px] min-[641px]:w-[46px]"
             >
               ×
             </button>
@@ -49,7 +49,7 @@ export function Gallery({ images }: { images: string[] }) {
                 setActive((c) => (c - 1 + n) % n);
               }}
               aria-label="Previous"
-              className="absolute left-7 flex h-[52px] w-[52px] items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white"
+              className="absolute bottom-20 left-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:bottom-auto min-[641px]:left-7 min-[641px]:top-1/2 min-[641px]:h-[52px] min-[641px]:w-[52px] min-[641px]:-translate-y-1/2"
             >
               ‹
             </button>
@@ -72,11 +72,11 @@ export function Gallery({ images }: { images: string[] }) {
                 setActive((c) => (c + 1) % n);
               }}
               aria-label="Next"
-              className="absolute right-7 flex h-[52px] w-[52px] items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white"
+              className="absolute bottom-20 right-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:bottom-auto min-[641px]:right-7 min-[641px]:top-1/2 min-[641px]:h-[52px] min-[641px]:w-[52px] min-[641px]:-translate-y-1/2"
             >
               ›
             </button>
-            <div className="absolute bottom-7 font-sans text-[13px] text-white/80">
+            <div className="absolute bottom-4 font-sans text-[13px] text-white/80 min-[641px]:bottom-7">
               {active + 1} / {n}
             </div>
           </motion.div>

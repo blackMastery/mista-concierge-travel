@@ -51,6 +51,7 @@ export default async function AccountPage() {
     insurance: boolean;
     total_cents: number;
     status: string;
+    reference_code: string;
     tours: { title: string; slug: string } | null;
   };
   const bookingRows = (bookings ?? []) as unknown as BookingRow[];
@@ -120,6 +121,10 @@ export default async function AccountPage() {
                       {tour?.title ?? "Tour"}
                     </Link>
                     <div className="mt-1 text-[13px] text-muted">
+                      <span className="font-mono text-[12px] font-semibold text-green">
+                        {b.reference_code}
+                      </span>
+                      {" · "}
                       {b.travelers} {b.travelers === 1 ? "traveler" : "travelers"}
                       {b.travel_date ? ` · ${b.travel_date}` : ""}
                       {b.insurance ? " · insured" : ""}

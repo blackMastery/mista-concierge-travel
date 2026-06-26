@@ -46,17 +46,21 @@ export default async function AdminDashboard() {
             <Link href="/admin/bookings" className="font-sans text-[13px] font-semibold text-green no-underline">View all →</Link>
           </div>
           {bookings.slice(0, 6).map((b) => (
-            <div key={b.id} className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0">
+            <Link
+              key={b.id}
+              href={`/admin/bookings/${b.id}`}
+              className="flex items-center justify-between border-b border-ink/[0.06] py-2.5 last:border-0 no-underline hover:bg-green/[0.03]"
+            >
               <div className="min-w-0">
                 <div className="truncate font-sans text-[14px] font-medium text-ink">
-                  {b.tours?.title ?? "Tour"}
+                  {b.reference_code} · {b.tours?.title ?? "Tour"}
                 </div>
                 <div className="text-[12px] text-muted">
                   {b.travelers} pax · {formatPrice(b.total_cents)}
                 </div>
               </div>
               <StatusBadge status={b.status} />
-            </div>
+            </Link>
           ))}
           {bookings.length === 0 && <p className="m-0 text-[13px] text-muted-light">No bookings yet.</p>}
         </Card>

@@ -30,7 +30,11 @@ export default async function AdminTestimonialsPage() {
                   <Link href={`/admin/testimonials/${t.id}`} className="rounded-lg border border-ink/15 px-3.5 py-2 font-sans text-[13px] font-semibold text-ink no-underline hover:border-green hover:text-green">
                     Edit
                   </Link>
-                  <ConfirmButton action={deleteTestimonial.bind(null, t.id)} confirmText={`Delete testimonial from ${t.name}?`} />
+                  <ConfirmButton
+                    action={deleteTestimonial.bind(null, t.id)}
+                    title="Delete testimonial?"
+                    confirmText={`The testimonial from ${t.name} will be permanently removed.`}
+                  />
                 </div>
               </div>
             ))}

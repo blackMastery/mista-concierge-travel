@@ -4,8 +4,15 @@ import {
   getAllTours,
   getActivityTypes,
   getDestinations,
+  getFilteredTours,
 } from "@/lib/queries";
 import { getFavoriteSet } from "@/lib/auth";
+import {
+  computePriceBounds,
+  parseTourFilters,
+  tourDisplayPriceCents,
+  tourHasOccupancyPricing,
+} from "@/lib/tour-filters";
 
 export const metadata: Metadata = {
   title: "Tours & Experiences",
@@ -16,20 +23,32 @@ export const metadata: Metadata = {
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=2000&q=80";
 
-export default async function ToursPage() {
-  const [tours, activityTypes, destinations, favs] = await Promise.all([
+export default async function ToursPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+
+  const [allTours, activityTypes, destinations, favs] = await Promise.all([
     getAllTours(),
     getActivityTypes(),
     getDestinations(),
     getFavoriteSet(),
   ]);
 
-  const clientTours: ClientTour[] = tours.map((t) => ({
+  const destSlugByName = new Map(destinations.map((d) => [d.name, d.slug]));
+  const priceBounds = computePriceBounds(allTours);
+  const filters = parseTourFilters(params, priceBounds);
+  const filteredTours = await getFilteredTours(filters, destSlugByName, allTours);
+
+  const clientTours: ClientTour[] = filteredTours.map((t) => ({
     id: t.id,
     slug: t.slug,
     title: t.title,
     location: t.location,
-    price_cents: t.price_cents,
+    price_cents: tourDisplayPriceCents(t),
+    pricePerPerson: !tourHasOccupancyPricing(t),
     rating: t.rating,
     reviews_count: t.reviews_count,
     duration_label: t.duration_label,
@@ -38,23 +57,23 @@ export default async function ToursPage() {
     badge_color: t.badge_color,
     card_image_url: t.card_image_url,
     destName: t.destinations?.name ?? "",
+    destSlug: t.destinations?.slug ?? "",
     acts: t.tour_activities
       .map((ta) => ta.activity_types?.name)
       .filter((n): n is string => !!n),
     isFavorite: favs.has(t.id),
   }));
 
-  // Destination filter options, in catalog order, with live counts.
   const destOptions = destinations
     .map((d) => ({
       name: d.name,
-      count: clientTours.filter((t) => t.destName === d.name).length,
+      slug: d.slug,
+      count: allTours.filter((t) => t.destinations?.slug === d.slug).length,
     }))
     .filter((d) => d.count > 0);
 
   return (
     <div className="min-h-screen">
-      {/* PAGE HEADER */}
       <section
         className="px-8 py-16 max-[640px]:px-[22px]"
         style={{
@@ -79,6 +98,8 @@ export default async function ToursPage() {
         tours={clientTours}
         destOptions={destOptions}
         activityTypes={activityTypes}
+        filters={filters}
+        priceBounds={priceBounds}
       />
     </div>
   );

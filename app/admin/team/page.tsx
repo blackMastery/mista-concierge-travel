@@ -34,7 +34,11 @@ export default async function AdminTeamPage() {
                   <Link href={`/admin/team/${m.id}`} className="rounded-lg border border-ink/15 px-3 py-2 font-sans text-[13px] font-semibold text-ink no-underline hover:border-green hover:text-green">
                     Edit
                   </Link>
-                  <ConfirmButton action={deleteTeamMember.bind(null, m.id)} confirmText={`Delete ${m.name}?`} />
+                  <ConfirmButton
+                    action={deleteTeamMember.bind(null, m.id)}
+                    title="Delete team member?"
+                    confirmText={`${m.name} will be permanently removed from the team page.`}
+                  />
                 </div>
               </div>
             ))}

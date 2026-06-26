@@ -3,8 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
+import {
+  buildTrackUrl,
+  sendBookingConfirmationEmails,
+} from "@/lib/email";
 
-export type ActionResult = { ok: boolean; error?: string };
+export type ActionResult = { ok: boolean; error?: string; referenceCode?: string };
+
+function generateBookingReference(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let i = 0; i < 6; i++) {
+    suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return `MC-${suffix}`;
+}
 
 // ---------------------------------------------------------------------------
 // Favorites (auth required)
@@ -99,32 +112,180 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
 // ---------------------------------------------------------------------------
 export type BookingInput = {
   tourId: string;
-  travelDate?: string;
+  travelDate: string;
   travelers: number;
   insurance: boolean;
   totalCents: number;
   pricingBreakdown?: unknown;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  specialRequests?: string;
+};
+
+export type BookingStatusResult = {
+  ok: boolean;
+  error?: string;
+  booking?: {
+    reference_code: string;
+    tour_title: string;
+    tour_slug: string;
+    travel_date: string | null;
+    travelers: number;
+    total_cents: number;
+    status: string;
+    pricing_breakdown: Json | null;
+    created_at: string;
+  };
 };
 
 export async function createBookingRequest(
   input: BookingInput,
 ): Promise<ActionResult> {
+  const contactName = input.contactName.trim();
+  const contactEmail = input.contactEmail.trim().toLowerCase();
+  const contactPhone = input.contactPhone.trim();
+  const travelDate = input.travelDate.trim();
+  const specialRequests = input.specialRequests?.trim() || null;
+
+  if (!contactName) {
+    return { ok: false, error: "Please enter your name." };
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) {
+    return { ok: false, error: "Please enter a valid email address." };
+  }
+  if (!contactPhone) {
+    return { ok: false, error: "Please enter your phone number." };
+  }
+  if (!travelDate) {
+    return { ok: false, error: "Please select a travel date." };
+  }
+  if (input.travelers < 1) {
+    return { ok: false, error: "Please select at least one traveler." };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { error } = await supabase.from("booking_requests").insert({
+  let resolvedName = contactName;
+  if (user && !resolvedName) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    resolvedName = (profile as { full_name: string | null } | null)?.full_name?.trim() || contactName;
+  }
+
+  const { data: tour } = await supabase
+    .from("tours")
+    .select("title")
+    .eq("id", input.tourId)
+    .maybeSingle();
+
+  const insertPayload = {
     tour_id: input.tourId,
     user_id: user?.id ?? null,
-    travel_date: input.travelDate || null,
+    travel_date: travelDate,
     travelers: input.travelers,
     insurance: input.insurance,
     total_cents: input.totalCents,
     pricing_breakdown: (input.pricingBreakdown ?? null) as Json,
-    contact_email: user?.email ?? null,
-  });
-  if (error) return { ok: false, error: "Could not submit your request." };
+    contact_name: resolvedName,
+    contact_email: contactEmail,
+    contact_phone: contactPhone,
+    special_requests: specialRequests,
+  };
+
+  // Guest inserts cannot use `.select()` — RLS only allows select when
+  // auth.uid() = user_id, and null = null is not true for anonymous users.
+  let referenceCode = "";
+  let bookingId: string | null = null;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    referenceCode = generateBookingReference();
+    const row = { ...insertPayload, reference_code: referenceCode };
+
+    if (user) {
+      const { data, error } = await supabase
+        .from("booking_requests")
+        .insert(row)
+        .select("id, reference_code")
+        .single();
+      if (!error && data) {
+        bookingId = (data as { id: string; reference_code: string }).id;
+        referenceCode = (data as { id: string; reference_code: string }).reference_code;
+        break;
+      }
+      if (error?.code === "23505") continue;
+      console.error("[booking] insert failed:", error?.message);
+      return { ok: false, error: "Could not submit your request." };
+    }
+
+    const { error } = await supabase.from("booking_requests").insert(row);
+    if (!error) break;
+    if (error.code === "23505") continue;
+    console.error("[booking] insert failed:", error.message);
+    return { ok: false, error: "Could not submit your request." };
+  }
+
+  if (!referenceCode) {
+    return { ok: false, error: "Could not submit your request." };
+  }
+
+  const breakdown = input.pricingBreakdown as {
+    deposit_cents?: number;
+  } | null;
+
+  void sendBookingConfirmationEmails({
+    bookingId: bookingId ?? referenceCode,
+    referenceCode,
+    tourTitle: (tour as { title: string } | null)?.title ?? "Tour",
+    travelDate,
+    travelers: input.travelers,
+    totalCents: input.totalCents,
+    depositCents: breakdown?.deposit_cents,
+    contactName: resolvedName,
+    contactEmail,
+    contactPhone,
+    specialRequests: specialRequests ?? undefined,
+    trackUrl: buildTrackUrl(referenceCode),
+  }).catch((err) => console.error("[booking] email failed:", err));
+
   if (user) revalidatePath("/account");
-  return { ok: true };
+  return { ok: true, referenceCode };
+}
+
+export async function trackBooking(
+  reference: string,
+  email: string,
+): Promise<BookingStatusResult> {
+  const ref = reference.trim();
+  const cleanEmail = email.trim().toLowerCase();
+  if (!ref || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail)) {
+    return { ok: false, error: "Please enter your reference and email." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_booking_status", {
+    p_reference: ref,
+    p_email: cleanEmail,
+  });
+
+  if (error) {
+    return { ok: false, error: "Could not look up your booking." };
+  }
+
+  const rows = (data ?? []) as BookingStatusResult["booking"][];
+  const booking = rows[0];
+  if (!booking) {
+    return {
+      ok: false,
+      error: "No booking found with that reference and email.",
+    };
+  }
+
+  return { ok: true, booking };
 }

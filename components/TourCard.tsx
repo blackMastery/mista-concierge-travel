@@ -14,6 +14,7 @@ export type TourCardData = {
   title: string;
   location: string;
   price_cents: number;
+  pricePerPerson?: boolean;
   rating: number;
   reviews_count: number;
   duration_label: string;
@@ -105,10 +106,12 @@ export function TourCard({
               </div>
               <div className="font-serif text-[22px] font-bold text-gold">
                 {formatPrice(tour.price_cents)}
-                <span className="font-body text-[12px] font-normal text-muted-light">
-                  {" "}
-                  / person
-                </span>
+                {tour.pricePerPerson !== false && (
+                  <span className="font-body text-[12px] font-normal text-muted-light">
+                    {" "}
+                    / person
+                  </span>
+                )}
               </div>
             </div>
             <span className="rounded-lg bg-green px-[18px] py-[9px] font-sans text-[13px] font-semibold text-white transition-colors group-hover:bg-green-dark">
