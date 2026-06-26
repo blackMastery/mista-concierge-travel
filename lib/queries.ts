@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 import {
   filterTours,
   sortTours,
@@ -54,7 +55,7 @@ const TOUR_LIST_SELECT =
 export async function getFeaturedTours(): Promise<TourWithActivities[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("tours")
       .select(TOUR_LIST_SELECT)
@@ -69,7 +70,7 @@ export async function getFeaturedTours(): Promise<TourWithActivities[]> {
 export async function getAllTours(): Promise<TourWithActivities[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("tours")
       .select(TOUR_LIST_SELECT)
@@ -93,7 +94,7 @@ export async function getFilteredTours(
 export async function getTourSlugs(): Promise<string[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase.from("tours").select("slug");
     return (data ?? []).map((t) => t.slug);
   } catch {
@@ -104,7 +105,7 @@ export async function getTourSlugs(): Promise<string[]> {
 export async function getTourBySlug(slug: string): Promise<TourDetail | null> {
   if (!hasEnv) return null;
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("tours")
       .select(
@@ -129,7 +130,7 @@ export async function getTourBySlug(slug: string): Promise<TourDetail | null> {
 export async function getDestinations(): Promise<Destination[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase.from("destinations").select("*").order("sort_order");
     return data ?? [];
   } catch {
@@ -140,7 +141,7 @@ export async function getDestinations(): Promise<Destination[]> {
 export async function getFeaturedDestination(): Promise<Destination | null> {
   if (!hasEnv) return null;
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("destinations")
       .select("*")
@@ -157,7 +158,7 @@ export async function getFeaturedDestination(): Promise<Destination | null> {
 export async function getActivityTypes(): Promise<string[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("activity_types")
       .select("name")
@@ -171,7 +172,7 @@ export async function getActivityTypes(): Promise<string[]> {
 export async function getTestimonials(): Promise<Testimonial[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase.from("testimonials").select("*").order("sort_order");
     return data ?? [];
   } catch {
@@ -182,7 +183,7 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 export async function getTeam(): Promise<TeamMember[]> {
   if (!hasEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase.from("team_members").select("*").order("sort_order");
     return data ?? [];
   } catch {
@@ -194,7 +195,7 @@ export async function getTeam(): Promise<TeamMember[]> {
 export async function getSiteContent(): Promise<Record<string, unknown>> {
   if (!hasEnv) return {};
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase.from("site_content").select("key, value");
     const map: Record<string, unknown> = {};
     for (const row of data ?? []) map[row.key] = row.value;
@@ -209,7 +210,7 @@ export async function getSiteContent(): Promise<Record<string, unknown>> {
 export async function getDefaultPaymentTerms(): Promise<PaymentTerms | null> {
   if (!hasEnv) return null;
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("site_content")
       .select("value")
