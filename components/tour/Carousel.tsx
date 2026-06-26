@@ -1,25 +1,38 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
+import { createClient } from "@/lib/supabase/client";
 
 export function Carousel({
   images,
   tourId,
   slug,
-  initialFavorite,
 }: {
   images: string[];
   tourId: string;
   slug: string;
-  initialFavorite: boolean;
 }) {
   const router = useRouter();
   const [i, setI] = useState(0);
-  const [fav, setFav] = useState(initialFavorite);
+  const [fav, setFav] = useState(false);
   const [, startTransition] = useTransition();
   const n = images.length;
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("favorites")
+        .select("tour_id")
+        .eq("user_id", user.id)
+        .eq("tour_id", tourId)
+        .maybeSingle();
+      if (data) setFav(true);
+    });
+  }, [tourId]);
 
   function onFav() {
     const next = !fav;

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { createBookingRequest } from "@/app/actions";
+import { createClient } from "@/lib/supabase/client";
 import { formatPrice, formatDate } from "@/lib/format";
 import type { TourPricing, PaymentTerms } from "@/lib/database.types";
 
@@ -19,8 +20,6 @@ export function BookingWidget({
   pricing,
   paymentTerms,
   depositOpen,
-  userEmail,
-  userName,
 }: {
   tourId: string;
   basePriceCents: number;
@@ -28,8 +27,6 @@ export function BookingWidget({
   pricing: TourPricing | null;
   paymentTerms: PaymentTerms | null;
   depositOpen: boolean;
-  userEmail?: string | null;
-  userName?: string | null;
 }) {
   const occupancy = pricing?.occupancy ?? [];
   const childTiers = pricing?.children ?? [];
@@ -42,14 +39,28 @@ export function BookingWidget({
     childTiers.map(() => 0),
   );
   const [travelers, setTravelers] = useState(2);
-  const [contactName, setContactName] = useState(userName ?? "");
-  const [contactEmail, setContactEmail] = useState(userEmail ?? "");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
   const [booked, setBooked] = useState(false);
   const [referenceCode, setReferenceCode] = useState("");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      if (user.email) setContactEmail(user.email);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.full_name) setContactName(profile.full_name);
+    });
+  }, []);
 
   const selectedTier = occupancy[occIdx] ?? occupancy[0];
   const childTotal = childCounts.reduce((a, b) => a + b, 0);

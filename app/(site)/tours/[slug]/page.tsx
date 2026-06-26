@@ -7,8 +7,6 @@ import { Gallery } from "@/components/tour/Gallery";
 import { BookingWidget } from "@/components/tour/BookingWidget";
 import { MobileBookBar } from "@/components/tour/MobileBookBar";
 import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms } from "@/lib/queries";
-import { getFavoriteSet } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatDate } from "@/lib/format";
 import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
 
@@ -34,31 +32,9 @@ export default async function TourDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [tour, favs, defaultTerms, userContext] = await Promise.all([
+  const [tour, defaultTerms] = await Promise.all([
     getTourBySlug(slug),
-    getFavoriteSet(),
     getDefaultPaymentTerms(),
-    (async () => {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return { email: null, name: null };
-      try {
-        const supabase = await createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return { email: null, name: null };
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .maybeSingle();
-        return {
-          email: user.email ?? null,
-          name: (profile as { full_name: string | null } | null)?.full_name ?? null,
-        };
-      } catch {
-        return { email: null, name: null };
-      }
-    })(),
   ]);
   if (!tour) notFound();
 
@@ -95,12 +71,7 @@ export default async function TourDetailPage({
 
       {/* CAROUSEL */}
       <section className="mx-auto max-w-[1280px] px-8 pt-5 max-[640px]:px-[22px]">
-        <Carousel
-          images={heroImages}
-          tourId={tour.id}
-          slug={tour.slug}
-          initialFavorite={favs.has(tour.id)}
-        />
+        <Carousel images={heroImages} tourId={tour.id} slug={tour.slug} />
       </section>
 
       {/* MAIN GRID */}
@@ -354,8 +325,6 @@ export default async function TourDetailPage({
             pricing={tour.pricing}
             paymentTerms={terms}
             depositOpen={depositOpen}
-            userEmail={userContext.email}
-            userName={userContext.name}
           />
           <div className="rounded-2xl bg-white p-[22px] px-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
             <h4 className="m-0 mb-3.5 font-sans text-[14px] font-semibold text-ink">
