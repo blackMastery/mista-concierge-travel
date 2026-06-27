@@ -9,6 +9,8 @@ import { MobileBookBar } from "@/components/tour/MobileBookBar";
 import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms } from "@/lib/queries";
 import { formatPrice, formatDate } from "@/lib/format";
 import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildMetadata, tourJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const slugs = await getTourSlugs();
@@ -22,8 +24,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const tour = await getTourBySlug(slug);
-  if (!tour) return { title: "Tour not found" };
-  return { title: tour.title, description: tour.overview ?? undefined };
+  if (!tour) return { title: "Tour not found", robots: { index: false, follow: false } };
+  return buildMetadata({
+    title: tour.title,
+    description: tour.overview ?? undefined,
+    path: `/tours/${tour.slug}`,
+    image: tour.card_image_url,
+    type: "article",
+  });
 }
 
 export default async function TourDetailPage({
@@ -60,6 +68,17 @@ export default async function TourDetailPage({
 
   return (
     <div>
+      <JsonLd
+        data={[
+          tourJsonLd(tour),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Tours", path: "/tours" },
+            { name: tour.title, path: `/tours/${tour.slug}` },
+          ]),
+        ]}
+      />
+
       {/* BREADCRUMB */}
       <div className="mx-auto max-w-[1280px] px-8 pt-[22px] max-[640px]:px-[22px]">
         <div className="truncate font-sans text-[13px] text-muted-light">

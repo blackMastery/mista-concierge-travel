@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { Eyebrow } from "@/components/ui";
 import { getDestinations, getFeaturedDestination } from "@/lib/queries";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Destinations",
   description:
     "Six signature Caribbean destinations, each with its own rhythm. Find the one that calls to you.",
-};
+  path: "/destinations",
+});
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80";

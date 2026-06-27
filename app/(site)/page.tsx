@@ -5,6 +5,7 @@ import { TourCard } from "@/components/TourCard";
 import { Newsletter } from "@/components/Newsletter";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { LiveBookingToast } from "@/components/LiveBookingToast";
+import { buildMetadata } from "@/lib/seo";
 import {
   getFeaturedTours,
   getDestinations,
@@ -17,6 +18,8 @@ import type { StatItem, PillarItem } from "@/lib/format";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80";
+
+export const metadata = buildMetadata({ path: "/" });
 
 export default async function HomePage() {
   const [tours, destinations, testimonials, content, favs] = await Promise.all([

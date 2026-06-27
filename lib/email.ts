@@ -5,6 +5,7 @@ import {
   bookingStatusUpdateEmail,
   type BookingEmailDetails,
 } from "@/lib/email-templates/booking";
+import { SITE_URL } from "@/lib/seo";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -21,10 +22,7 @@ function adminAddress(): string | null {
 }
 
 function siteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
+  return SITE_URL;
 }
 
 export function buildTrackUrl(referenceCode: string): string {

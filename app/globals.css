@@ -76,6 +76,34 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent iOS/Safari from auto-inflating text in landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Cleaner taps on touch devices — no grey flash on press. */
+a,
+button,
+input,
+select,
+textarea,
+label,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Mobile form controls must be >=16px or iOS Safari zooms in on focus.
+ * Unlayered (so it wins over Tailwind's text-[14px] utilities) and scoped
+ * to small screens so the desktop type scale is untouched. Range sliders
+ * carry no text, so they're excluded.
+ */
+@media (max-width: 640px) {
+  input:not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 body {

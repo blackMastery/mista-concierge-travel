@@ -1,6 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  SITE,
+  SITE_URL,
+  DEFAULT_TITLE,
+  OG_IMAGE_PATH,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -23,13 +32,57 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Lets content extend into the notch/home-indicator area so the
+  // env(safe-area-inset-*) used by the WhatsApp FAB and mobile book bar work.
+  viewportFit: "cover",
+  themeColor: "#06090a",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Mista Concierge Travel — Luxury Caribbean Journeys",
+    default: DEFAULT_TITLE,
     template: "%s · Mista Concierge Travel",
   },
-  description:
-    "Bespoke luxury journeys across the Caribbean — from the Pitons of St. Lucia to the cays of the Bahamas, crafted by islanders who know every hidden cove.",
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    "Caribbean luxury travel",
+    "concierge travel",
+    "St. Lucia tours",
+    "Bahamas vacation",
+    "bespoke Caribbean journeys",
+    "luxury island getaways",
+  ],
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: SITE.locale,
+    url: SITE_URL,
+    title: DEFAULT_TITLE,
+    description: SITE.description,
+    images: [{ url: OG_IMAGE_PATH, width: 1200, height: 630, alt: SITE.name }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: SITE.description,
+    images: [OG_IMAGE_PATH],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -40,7 +93,10 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${montserrat.variable} ${inter.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+        {children}
+      </body>
     </html>
   );
 }

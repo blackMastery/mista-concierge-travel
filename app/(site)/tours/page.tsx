@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { ToursClient, type ClientTour } from "./ToursClient";
 import {
   getAllTours,
@@ -13,12 +12,14 @@ import {
   tourDisplayPriceCents,
   tourHasOccupancyPricing,
 } from "@/lib/tour-filters";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Tours & Experiences",
   description:
     "Handcrafted journeys across the Caribbean's most beautiful islands. Filter to find the escape that fits you.",
-};
+  path: "/tours",
+});
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=2000&q=80";

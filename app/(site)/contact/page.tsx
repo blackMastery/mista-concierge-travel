@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { Eyebrow } from "@/components/ui";
 import { ContactForm } from "@/components/ContactForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Contact",
   description:
     "Tell us your dream and our concierge team will design it. We respond within 24 hours.",
-};
+  path: "/contact",
+});
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?auto=format&fit=crop&w=2000&q=80";

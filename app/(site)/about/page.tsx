@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import { Reveal } from "@/components/Reveal";
 import { Eyebrow } from "@/components/ui";
 import { getTeam, getSiteContent } from "@/lib/queries";
 import type { PillarItem, CertItem } from "@/lib/format";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "About Us",
   description:
     "We don't sell trips. We craft the journeys you'll talk about for the rest of your life.",
-};
+  path: "/about",
+});
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=2000&q=80";

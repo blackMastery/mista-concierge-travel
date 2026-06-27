@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Eyebrow } from "@/components/ui";
@@ -6,8 +5,14 @@ import { TourCard, type TourCardData } from "@/components/TourCard";
 import { SignOutButton } from "@/components/SignOutButton";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "My Account" };
+export const metadata = buildMetadata({
+  title: "My Account",
+  description: "View your Mista Concierge Travel bookings and saved tours.",
+  path: "/account",
+  noIndex: true,
+});
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-gold/15 text-gold-deep",
