@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getSiteContent } from "@/lib/queries";
+import { getAllTours, getFeaturedTours } from "@/lib/queries";
 
 const SOCIALS = [
   { label: "Instagram", icon: "IG" },
@@ -9,8 +9,9 @@ const SOCIALS = [
 ];
 
 export async function Footer() {
-  const content = await getSiteContent();
-  const tourLinks = (content.footer_popular_tours as string[] | undefined) ?? [];
+  const featured = await getFeaturedTours();
+  const tours =
+    featured.length > 0 ? featured.slice(0, 5) : (await getAllTours()).slice(0, 5);
 
   return (
     <footer className="border-t border-gold/20 bg-[#0A0D0C] font-body text-[#C9CFCB]">
@@ -44,22 +45,24 @@ export async function Footer() {
             </div>
           </div>
 
-          <div>
-            <h4 className="mb-[18px] font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">
-              Popular Tours
-            </h4>
-            <div className="flex flex-col gap-[11px]">
-              {tourLinks.map((t) => (
-                <Link
-                  key={t}
-                  href="/tours"
-                  className="text-[14px] text-[#9AA39E] no-underline transition-colors hover:text-sand"
-                >
-                  {t}
-                </Link>
-              ))}
+          {tours.length > 0 && (
+            <div>
+              <h4 className="mb-[18px] font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">
+                Popular Tours
+              </h4>
+              <div className="flex flex-col gap-[11px]">
+                {tours.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/tours/${t.slug}`}
+                    className="text-[14px] text-[#9AA39E] no-underline transition-colors hover:text-sand"
+                  >
+                    {t.title}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <h4 className="mb-[18px] font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">

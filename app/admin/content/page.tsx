@@ -2,7 +2,6 @@ import { PageHeader, Card } from "@/components/admin/ui";
 import {
   ObjectBlockEditor,
   ArrayBlockEditor,
-  StringArrayEditor,
   PaymentTermsBlockEditor,
 } from "@/components/admin/ContentEditors";
 import { getSiteContent } from "@/lib/queries";
@@ -91,14 +90,6 @@ export default async function AdminContentPage() {
               { name: "label", label: "Caption" },
             ]}
             initial={get<Obj[]>("certs", [])}
-          />
-        </Card>
-
-        <Card>
-          <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">Footer · popular tours</h2>
-          <StringArrayEditor
-            contentKey="footer_popular_tours"
-            initial={get<string[]>("footer_popular_tours", [])}
           />
         </Card>
       </div>

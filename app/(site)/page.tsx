@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { Eyebrow } from "@/components/ui";
 import { TourCard } from "@/components/TourCard";
-import { Newsletter } from "@/components/Newsletter";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { LiveBookingToast } from "@/components/LiveBookingToast";
 import { buildMetadata } from "@/lib/seo";
@@ -229,29 +228,6 @@ export default async function HomePage() {
                 </div>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* NEWSLETTER */}
-      <section className="px-8 py-20 max-[640px]:px-[22px]">
-        <div
-          className="mx-auto max-w-[1000px] overflow-hidden rounded-3xl shadow-[0_10px_40px_rgba(15,76,117,0.25)]"
-          style={{ background: "linear-gradient(120deg,#0F4C75 0%,#1B7A5C 100%)" }}
-        >
-          <div className="flex flex-col items-center gap-8 px-6 py-10 text-center min-[981px]:flex-row min-[981px]:justify-between min-[981px]:gap-10 min-[981px]:px-14 min-[981px]:py-[52px] min-[981px]:text-left">
-            <div className="flex-1">
-              <h2 className="m-0 mb-2.5 font-serif text-[32px] font-bold leading-[1.2] text-sand max-[640px]:text-[26px]">
-                Get exclusive travel inspiration
-              </h2>
-              <p className="m-0 text-[15px] leading-[1.6] text-sand/85">
-                Rare itineraries, seasonal openings and member-only rates —
-                straight to your inbox.
-              </p>
-            </div>
-            <div className="w-[380px] max-w-full flex-shrink-0">
-              <Newsletter />
-            </div>
           </div>
         </div>
       </section>
