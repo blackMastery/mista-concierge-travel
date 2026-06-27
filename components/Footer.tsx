@@ -1,17 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getAllTours, getFeaturedTours } from "@/lib/queries";
-
-const SOCIALS = [
-  { label: "Instagram", icon: "IG" },
-  { label: "Facebook", icon: "FB" },
-  { label: "TripAdvisor", icon: "TA" },
-];
+import { getAllTours, getFeaturedTours, getSiteContent } from "@/lib/queries";
+import {
+  DEFAULT_BUSINESS_CONTACT,
+  DEFAULT_FOOTER,
+  DEFAULT_SOCIAL_LINKS,
+  resolveBlock,
+  resolveList,
+} from "@/lib/site-content";
 
 export async function Footer() {
-  const featured = await getFeaturedTours();
+  const [featured, content] = await Promise.all([getFeaturedTours(), getSiteContent()]);
   const tours =
     featured.length > 0 ? featured.slice(0, 5) : (await getAllTours()).slice(0, 5);
+  const biz = resolveBlock(content, "business_contact", DEFAULT_BUSINESS_CONTACT);
+  const footer = resolveBlock(content, "footer", DEFAULT_FOOTER);
+  const socials = resolveList(content, "social_links", DEFAULT_SOCIAL_LINKS);
 
   return (
     <footer className="border-t border-gold/20 bg-[#0A0D0C] font-body text-[#C9CFCB]">
@@ -27,15 +31,13 @@ export async function Footer() {
               </span>
             </div>
             <p className="mb-5 max-w-[320px] text-[14px] leading-[1.7] text-[#9AA39E]">
-              Bespoke luxury journeys across the Caribbean — from the Pitons of
-              St. Lucia to the cays of the Bahamas, crafted by islanders who know
-              every hidden cove.
+              {footer.tagline}
             </p>
             <div className="flex gap-2.5">
-              {SOCIALS.map((s) => (
+              {socials.map((s) => (
                 <a
                   key={s.label}
-                  href="#"
+                  href={s.href}
                   aria-label={s.label}
                   className="flex h-[38px] w-[38px] items-center justify-center rounded-lg bg-white/[0.06] font-sans text-[13px] font-semibold text-[#C9CFCB] no-underline transition-colors hover:bg-gold hover:text-[#1F2A26]"
                 >
@@ -69,13 +71,19 @@ export async function Footer() {
               Contact
             </h4>
             <div className="flex flex-col gap-[11px] text-[14px] text-[#9AA39E]">
-              <a href="tel:+12460000000" className="no-underline hover:text-sand">+1 246 000 0000</a>
-              <a href="mailto:hello@mistatravel.com" className="no-underline hover:text-sand">hello@mistatravel.com</a>
-              <a href="https://wa.me/12460000000" className="no-underline hover:text-sand">WhatsApp: Message us</a>
+              <a href={biz.phone_href} className="no-underline hover:text-sand">
+                {biz.phone}
+              </a>
+              <a href={`mailto:${biz.email}`} className="no-underline hover:text-sand">
+                {biz.email}
+              </a>
+              <a href={biz.whatsapp_href} className="no-underline hover:text-sand">
+                {biz.whatsapp_footer_label}
+              </a>
               <span className="leading-[1.6]">
-                Hastings Main Road, Christ Church
+                {biz.address_line1}
                 <br />
-                Barbados, Caribbean
+                {biz.address_line2}
               </span>
             </div>
           </div>
@@ -94,11 +102,17 @@ export async function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-center gap-3.5 border-t border-white/[0.08] py-6 text-[13px] text-[#7C857F] min-[541px]:flex-row min-[541px]:justify-between">
-          <span>© 2026 Mista Concierge Travel. All rights reserved.</span>
+          <span>{footer.copyright}</span>
           <div className="flex gap-6">
-            <a href="#" className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">Terms</a>
-            <a href="#" className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">Privacy</a>
-            <a href="#" className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">Sitemap</a>
+            <a href={footer.terms_href} className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">
+              {footer.terms_label}
+            </a>
+            <a href={footer.privacy_href} className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">
+              {footer.privacy_label}
+            </a>
+            <a href={footer.sitemap_href} className="text-[#7C857F] no-underline hover:text-[#C9CFCB]">
+              {footer.sitemap_label}
+            </a>
           </div>
         </div>
       </div>

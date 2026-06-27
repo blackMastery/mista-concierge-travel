@@ -13,6 +13,8 @@ import {
   tourHasOccupancyPricing,
 } from "@/lib/tour-filters";
 import { buildMetadata } from "@/lib/seo";
+import { getSiteContent } from "@/lib/queries";
+import { DEFAULT_TOURS_PAGE, resolveBlock } from "@/lib/site-content";
 
 export const metadata = buildMetadata({
   title: "Tours & Experiences",
@@ -31,12 +33,14 @@ export default async function ToursPage({
 }) {
   const params = await searchParams;
 
-  const [allTours, activityTypes, destinations, favs] = await Promise.all([
+  const [allTours, activityTypes, destinations, favs, content] = await Promise.all([
     getAllTours(),
     getActivityTypes(),
     getDestinations(),
     getFavoriteSet(),
+    getSiteContent(),
   ]);
+  const page = resolveBlock(content, "tours_page", DEFAULT_TOURS_PAGE);
 
   const destSlugByName = new Map(destinations.map((d) => [d.name, d.slug]));
   const priceBounds = computePriceBounds(allTours);
@@ -83,14 +87,13 @@ export default async function ToursPage({
       >
         <div className="mx-auto max-w-[1280px]">
           <span className="font-sans text-[13px] font-semibold uppercase tracking-[2px] text-gold">
-            Tours &amp; Experiences
+            {page.eyebrow}
           </span>
           <h1 className="m-0 mb-2 mt-2.5 font-serif text-[46px] font-bold leading-[1.1] text-sand max-[640px]:text-[34px]">
-            All Tours &amp; Experiences
+            {page.headline}
           </h1>
           <p className="m-0 max-w-[560px] text-[16px] text-sand/[0.88]">
-            Handcrafted journeys across the Caribbean&apos;s most beautiful
-            islands. Filter to find the escape that fits you.
+            {page.description}
           </p>
         </div>
       </section>

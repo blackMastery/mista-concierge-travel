@@ -1,8 +1,8 @@
 // Floating WhatsApp chat button with a soft pulsing glow.
-export function WhatsAppFab() {
+export function WhatsAppFab({ href }: { href: string }) {
   return (
     <a
-      href="https://wa.me/12460000000"
+      href={href}
       aria-label="Chat on WhatsApp"
       target="_blank"
       rel="noopener noreferrer"

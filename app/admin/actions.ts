@@ -16,6 +16,7 @@ function revalidatePublic() {
   revalidatePath("/tours");
   revalidatePath("/destinations");
   revalidatePath("/about");
+  revalidatePath("/contact");
 }
 
 // ===========================================================================

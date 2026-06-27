@@ -19,6 +19,14 @@ import {
   type StatItem,
   type PillarItem,
 } from "@/lib/format";
+import {
+  DEFAULT_BUSINESS_CONTACT,
+  DEFAULT_HOME_DESTINATIONS,
+  DEFAULT_HOME_FEATURED_TOURS,
+  DEFAULT_HOME_TESTIMONIALS,
+  DEFAULT_HOME_WHY_CHOOSE,
+  resolveBlock,
+} from "@/lib/site-content";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80";
@@ -38,6 +46,11 @@ export default async function HomePage() {
     ...DEFAULT_HOME_HERO,
     ...(content.home_hero as Partial<HeroContent> | undefined),
   };
+  const biz = resolveBlock(content, "business_contact", DEFAULT_BUSINESS_CONTACT);
+  const featuredTours = resolveBlock(content, "home_featured_tours", DEFAULT_HOME_FEATURED_TOURS);
+  const whyChoose = resolveBlock(content, "home_why_choose", DEFAULT_HOME_WHY_CHOOSE);
+  const destinationsSection = resolveBlock(content, "home_destinations", DEFAULT_HOME_DESTINATIONS);
+  const testimonialsSection = resolveBlock(content, "home_testimonials", DEFAULT_HOME_TESTIMONIALS);
   const stats = (content.hero_stats as StatItem[] | undefined) ?? [];
   const pillars = (content.pillars as PillarItem[] | undefined) ?? [];
   const teaser = destinations.slice(0, 3);
@@ -100,13 +113,12 @@ export default async function HomePage() {
       {/* FEATURED TOURS */}
       <section className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
         <Reveal className="mx-auto mb-[54px] max-w-[620px] text-center">
-          <Eyebrow>Curated Experiences</Eyebrow>
+          <Eyebrow>{featuredTours.eyebrow}</Eyebrow>
           <h2 className="m-0 mb-3.5 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
-            Featured Tours
+            {featuredTours.headline}
           </h2>
           <p className="m-0 text-[16px] leading-[1.6] text-muted">
-            Our most-loved journeys, each one a seamless blend of wild adventure
-            and quiet luxury.
+            {featuredTours.description}
           </p>
         </Reveal>
         <div className="grid grid-cols-3 gap-7 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1">
@@ -125,10 +137,10 @@ export default async function HomePage() {
         </div>
         <div className="mt-[46px] text-center">
           <Link
-            href="/tours"
+            href={featuredTours.cta_href ?? "/tours"}
             className="inline-block rounded-lg border-2 border-gold px-[34px] py-[13px] font-sans text-[15px] font-semibold text-green no-underline transition-colors hover:bg-gold hover:text-white"
           >
-            View All Tours
+            {featuredTours.cta_label}
           </Link>
         </div>
       </section>
@@ -137,9 +149,9 @@ export default async function HomePage() {
       <section style={{ background: "linear-gradient(160deg,#1B7A5C 0%,#15543F 100%)" }}>
         <div className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
           <Reveal className="mx-auto mb-14 max-w-[620px] text-center">
-            <Eyebrow>The Mista Difference</Eyebrow>
+            <Eyebrow>{whyChoose.eyebrow}</Eyebrow>
             <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-sand max-[640px]:text-[30px]">
-              Why Choose Mista Concierge
+              {whyChoose.headline}
             </h2>
           </Reveal>
           <div className="grid grid-cols-4 gap-6 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4">
@@ -166,16 +178,16 @@ export default async function HomePage() {
       <section className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-[560px]">
-            <Eyebrow>Where We Go</Eyebrow>
+            <Eyebrow>{destinationsSection.eyebrow}</Eyebrow>
             <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
-              Discover the islands
+              {destinationsSection.headline}
             </h2>
           </div>
           <Link
-            href="/destinations"
+            href={destinationsSection.link_href ?? "/destinations"}
             className="border-b-2 border-gold pb-[3px] font-sans text-[14px] font-semibold text-green no-underline"
           >
-            All destinations →
+            {destinationsSection.link_label}
           </Link>
         </div>
         <div className="grid grid-cols-3 gap-6 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1">
@@ -208,9 +220,9 @@ export default async function HomePage() {
       <section className="bg-cream">
         <div className="mx-auto max-w-[1280px] px-8 py-[90px] max-[640px]:px-[22px] max-[640px]:py-14">
           <Reveal className="mx-auto mb-[54px] max-w-[620px] text-center">
-            <Eyebrow>Traveler Stories</Eyebrow>
+            <Eyebrow>{testimonialsSection.eyebrow}</Eyebrow>
             <h2 className="m-0 mt-3 font-serif text-[42px] font-bold leading-[1.15] text-ink max-[640px]:text-[30px]">
-              Loved by adventurers worldwide
+              {testimonialsSection.headline}
             </h2>
           </Reveal>
           <div className="grid grid-cols-3 gap-6 max-[980px]:grid-cols-2 max-[640px]:grid-cols-1">
@@ -239,7 +251,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <WhatsAppFab />
+      <WhatsAppFab href={biz.whatsapp_href} />
       {/* <LiveBookingToast /> */}
     </div>
   );

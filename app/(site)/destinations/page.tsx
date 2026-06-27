@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { Eyebrow } from "@/components/ui";
-import { getDestinations, getFeaturedDestination } from "@/lib/queries";
+import { getDestinations, getFeaturedDestination, getSiteContent } from "@/lib/queries";
+import { DEFAULT_DESTINATIONS_PAGE, resolveBlock } from "@/lib/site-content";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -15,10 +16,12 @@ const HERO_IMAGE =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80";
 
 export default async function DestinationsPage() {
-  const [destinations, featured] = await Promise.all([
+  const [destinations, featured, content] = await Promise.all([
     getDestinations(),
     getFeaturedDestination(),
+    getSiteContent(),
   ]);
+  const page = resolveBlock(content, "destinations_page", DEFAULT_DESTINATIONS_PAGE);
 
   return (
     <div>
@@ -30,13 +33,12 @@ export default async function DestinationsPage() {
         }}
       >
         <div className="mx-auto w-full max-w-[1280px]">
-          <Eyebrow>Where We Go</Eyebrow>
+          <Eyebrow>{page.hero_eyebrow}</Eyebrow>
           <h1 className="m-0 mb-3 mt-3 max-w-[680px] font-serif text-[50px] font-bold leading-[1.08] text-sand max-[640px]:text-[34px]">
-            Discover the Caribbean&apos;s finest islands
+            {page.hero_headline}
           </h1>
           <p className="m-0 max-w-[560px] text-[17px] leading-[1.6] text-sand/90">
-            Six signature destinations, each with its own rhythm. Find the one
-            that calls to you — then let us craft the journey around it.
+            {page.hero_description}
           </p>
         </div>
       </section>
@@ -78,7 +80,7 @@ export default async function DestinationsPage() {
       {/* GRID */}
       <section className="mx-auto max-w-[1280px] px-8 pb-20 pt-10 max-[640px]:px-[22px]">
         <h2 className="m-0 mb-[30px] text-center font-serif text-[32px] font-bold text-ink">
-          Every island, beautifully covered
+          {page.grid_headline}
         </h2>
         <div className="grid grid-cols-3 gap-6 max-[980px]:grid-cols-2 max-[600px]:grid-cols-1">
           {destinations.map((d, i) => (
@@ -111,17 +113,16 @@ export default async function DestinationsPage() {
       <section style={{ background: "linear-gradient(120deg,#0F4C75,#1B7A5C)" }}>
         <div className="mx-auto max-w-[1000px] px-8 py-[70px] text-center max-[640px]:px-[22px]">
           <h2 className="m-0 mb-3 font-serif text-[34px] font-bold text-sand">
-            Can&apos;t decide? Let us help.
+            {page.cta_headline}
           </h2>
           <p className="mx-auto m-0 mb-7 max-w-[540px] text-[16px] text-sand/[0.88]">
-            Tell us how you like to travel and our concierge team will match you
-            to the perfect island and itinerary.
+            {page.cta_description}
           </p>
           <Link
-            href="/contact"
+            href={page.cta_href}
             className="inline-block rounded-lg bg-gold px-9 py-[15px] font-sans text-[16px] font-semibold text-green no-underline transition-transform hover:-translate-y-0.5"
           >
-            Plan My Journey
+            {page.cta_label}
           </Link>
         </div>
       </section>

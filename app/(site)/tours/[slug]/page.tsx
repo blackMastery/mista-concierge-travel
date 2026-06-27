@@ -6,8 +6,9 @@ import { Itinerary } from "@/components/tour/Itinerary";
 import { Gallery } from "@/components/tour/Gallery";
 import { BookingWidget } from "@/components/tour/BookingWidget";
 import { MobileBookBar } from "@/components/tour/MobileBookBar";
-import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms } from "@/lib/queries";
+import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms, getSiteContent } from "@/lib/queries";
 import { formatPrice, formatDate } from "@/lib/format";
+import { DEFAULT_BUSINESS_CONTACT, resolveBlock } from "@/lib/site-content";
 import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata, tourJsonLd, breadcrumbJsonLd } from "@/lib/seo";
@@ -40,11 +41,13 @@ export default async function TourDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [tour, defaultTerms] = await Promise.all([
+  const [tour, defaultTerms, content] = await Promise.all([
     getTourBySlug(slug),
     getDefaultPaymentTerms(),
+    getSiteContent(),
   ]);
   if (!tour) notFound();
+  const biz = resolveBlock(content, "business_contact", DEFAULT_BUSINESS_CONTACT);
 
   const terms = tour.payment_terms ?? defaultTerms;
   const todayISO = new Date().toISOString().slice(0, 10);
@@ -350,17 +353,17 @@ export default async function TourDetailPage({
               Questions? Talk to us
             </h4>
             <div className="flex flex-col gap-3">
-              <a href="tel:+12460000000" className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
+              <a href={biz.phone_href} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
                 <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream">☎</span>
-                +1 246 000 0000
+                {biz.phone}
               </a>
-              <a href="mailto:hello@mistatravel.com" className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
+              <a href={`mailto:${biz.email}`} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
                 <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream">✉</span>
-                hello@mistatravel.com
+                {biz.email}
               </a>
-              <a href="https://wa.me/12460000000" className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
+              <a href={biz.whatsapp_href} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
                 <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-green/[0.12] text-[11px] font-bold text-green">WA</span>
-                WhatsApp us
+                {biz.whatsapp_short_label}
               </a>
             </div>
           </div>
