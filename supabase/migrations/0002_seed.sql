@@ -158,6 +158,7 @@ insert into public.team_members (name, role, bio, photo_url, sort_order) values
 -- Brand micro-content
 -- ----------------------------------------------------------------------------
 insert into public.site_content (key, value) values
+('home_hero', '{"badge_rating":"★ 4.9","badge_text":"Trusted by 2,000+ travelers","headline":"Escape to the heart of the Caribbean","description":"Luxury island journeys crafted just for you — from the soaring Pitons of St. Lucia to the powder-soft cays of the Bahamas. Personally guided, perfectly planned.","primary_cta_label":"Explore Our Tours","primary_cta_href":"/tours","secondary_cta_label":"Plan Your Journey","secondary_cta_href":"/contact"}'),
 ('promo_banner', '{"strong":"Limited time","text":"— Book your 2026 adventure and save 15% on every itinerary.","cta_label":"Explore tours →","cta_href":"/tours"}'),
 ('hero_stats', '[{"num":"12+","label":"Years in the Caribbean"},{"num":"2,000+","label":"Travelers hosted"},{"num":"15+","label":"Islands covered"},{"num":"4.9★","label":"Average rating"}]'),
 ('pillars', '[{"icon":"🧭","title":"Local Experts","body":"Islanders with the connections and know-how no guidebook can offer."},{"icon":"✦","title":"True Luxury","body":"Five-star resorts, private transfers and chef-prepared meals throughout."},{"icon":"✎","title":"Personalized","body":"Every itinerary is shaped around your pace, interests and dreams."},{"icon":"🛡","title":"Safe & Secure","body":"Vetted partners, 24/7 support and full travel protection options."}]'),

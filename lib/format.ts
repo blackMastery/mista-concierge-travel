@@ -33,6 +33,27 @@ export type PromoBannerContent = {
   cta_label: string;
   cta_href: string;
 };
+export type HeroContent = {
+  badge_rating: string;
+  badge_text: string;
+  headline: string;
+  description: string;
+  primary_cta_label: string;
+  primary_cta_href: string;
+  secondary_cta_label: string;
+  secondary_cta_href: string;
+};
+export const DEFAULT_HOME_HERO: HeroContent = {
+  badge_rating: "★ 4.9",
+  badge_text: "Trusted by 2,000+ travelers",
+  headline: "Escape to the heart of the Caribbean",
+  description:
+    "Luxury island journeys crafted just for you — from the soaring Pitons of St. Lucia to the powder-soft cays of the Bahamas. Personally guided, perfectly planned.",
+  primary_cta_label: "Explore Our Tours",
+  primary_cta_href: "/tours",
+  secondary_cta_label: "Plan Your Journey",
+  secondary_cta_href: "/contact",
+};
 export type StatItem = { num: string; label: string };
 export type PillarItem = { icon: string; title: string; body: string };
 export type CertItem = { big: string; label: string };

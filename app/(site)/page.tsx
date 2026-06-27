@@ -13,7 +13,12 @@ import {
 } from "@/lib/queries";
 import { getFavoriteSet } from "@/lib/auth";
 import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
-import type { StatItem, PillarItem } from "@/lib/format";
+import {
+  DEFAULT_HOME_HERO,
+  type HeroContent,
+  type StatItem,
+  type PillarItem,
+} from "@/lib/format";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80";
@@ -29,6 +34,10 @@ export default async function HomePage() {
     getFavoriteSet(),
   ]);
 
+  const hero: HeroContent = {
+    ...DEFAULT_HOME_HERO,
+    ...(content.home_hero as Partial<HeroContent> | undefined),
+  };
   const stats = (content.hero_stats as StatItem[] | undefined) ?? [];
   const pillars = (content.pillars as PillarItem[] | undefined) ?? [];
   const teaser = destinations.slice(0, 3);
@@ -46,31 +55,29 @@ export default async function HomePage() {
           <div className="mx-auto w-full max-w-[1280px]">
             <Reveal className="max-w-[680px]">
               <div className="mb-6 inline-flex items-center gap-2 rounded-[30px] border border-gold/50 bg-gold/[0.18] px-4 py-[7px]">
-                <span className="text-[13px] text-gold">★ 4.9</span>
+                <span className="text-[13px] text-gold">{hero.badge_rating}</span>
                 <span className="font-sans text-[12.5px] font-medium tracking-[0.3px] text-sand">
-                  Trusted by 2,000+ travelers
+                  {hero.badge_text}
                 </span>
               </div>
               <h1 className="m-0 mb-5 font-serif text-[34px] font-bold leading-[1.08] text-sand [text-shadow:0_2px_24px_rgba(0,0,0,0.6)] sm:text-[48px] sm:leading-[1.05] lg:text-[64px]">
-                Escape to the heart of the Caribbean
+                {hero.headline}
               </h1>
               <p className="m-0 mb-8 max-w-[560px] text-[16px] leading-[1.6] text-sand/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.55)] sm:text-[19px]">
-                Luxury island journeys crafted just for you — from the soaring
-                Pitons of St. Lucia to the powder-soft cays of the Bahamas.
-                Personally guided, perfectly planned.
+                {hero.description}
               </p>
               <div className="flex flex-col items-stretch gap-3.5 sm:flex-row sm:items-center sm:gap-4">
                 <Link
-                  href="/tours"
+                  href={hero.primary_cta_href}
                   className="rounded-lg bg-green px-9 py-4 text-center font-sans text-[16px] font-semibold text-sand no-underline shadow-[0_8px_24px_rgba(27,122,92,0.4)] transition-transform hover:-translate-y-0.5 hover:bg-green-dark"
                 >
-                  Explore Our Tours
+                  {hero.primary_cta_label}
                 </Link>
                 <Link
-                  href="/contact"
+                  href={hero.secondary_cta_href}
                   className="rounded-lg border-2 border-sand/50 bg-white/[0.08] px-8 py-3.5 text-center font-sans text-[16px] font-semibold text-sand no-underline transition-colors hover:border-gold hover:bg-white/[0.16]"
                 >
-                  Plan Your Journey
+                  {hero.secondary_cta_label}
                 </Link>
               </div>
             </Reveal>
@@ -233,7 +240,7 @@ export default async function HomePage() {
       </section>
 
       <WhatsAppFab />
-      <LiveBookingToast />
+      {/* <LiveBookingToast /> */}
     </div>
   );
 }

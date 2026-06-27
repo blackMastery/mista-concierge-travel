@@ -20,6 +20,19 @@ function generateBookingReference(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+export async function signOut(): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut();
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/", "layout");
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Favorites (auth required)
 // ---------------------------------------------------------------------------
 export async function toggleFavorite(

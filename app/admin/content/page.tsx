@@ -44,6 +44,24 @@ export default async function AdminContentPage() {
         </Card>
 
         <Card>
+          <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">Home hero</h2>
+          <ObjectBlockEditor
+            contentKey="home_hero"
+            fields={[
+              { name: "badge_rating", label: "Badge rating" },
+              { name: "badge_text", label: "Badge text" },
+              { name: "headline", label: "Headline" },
+              { name: "description", label: "Description", textarea: true },
+              { name: "primary_cta_label", label: "Primary button label" },
+              { name: "primary_cta_href", label: "Primary button href" },
+              { name: "secondary_cta_label", label: "Secondary button label" },
+              { name: "secondary_cta_href", label: "Secondary button href" },
+            ]}
+            initial={get<Obj>("home_hero", {})}
+          />
+        </Card>
+
+        <Card>
           <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">Hero stats</h2>
           <ArrayBlockEditor
             contentKey="hero_stats"
