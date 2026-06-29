@@ -4,27 +4,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/SignOutButton";
-
-const NAV = [
-  { label: "Dashboard", href: "/admin", icon: "▥" },
-  { label: "Tours", href: "/admin/tours", icon: "✦" },
-  { label: "Destinations", href: "/admin/destinations", icon: "◉" },
-  { label: "Testimonials", href: "/admin/testimonials", icon: "❝" },
-  { label: "Team", href: "/admin/team", icon: "☺" },
-  { label: "Reviews", href: "/admin/reviews", icon: "★" },
-  { label: "Site Content", href: "/admin/content", icon: "✎" },
-  { label: "Bookings", href: "/admin/bookings", icon: "🧭" },
-  { label: "Messages", href: "/admin/messages", icon: "✉" },
-  { label: "Subscribers", href: "/admin/subscribers", icon: "@" },
-];
+import { ADMIN_PAGES, DASHBOARD_KEY } from "@/lib/admin-pages";
 
 function active(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function AdminSidebar({ email }: { email: string }) {
+export function AdminSidebar({
+  email,
+  isFullAccess,
+  allowedPages,
+}: {
+  email: string;
+  isFullAccess: boolean;
+  allowedPages: string[];
+}) {
   const pathname = usePathname();
+
+  const granted = new Set(allowedPages);
+  const seen = new Set<string>();
+  const nav = ADMIN_PAGES.filter((page) => {
+    if (seen.has(page.key)) return false;
+    seen.add(page.key);
+    if (page.key === DASHBOARD_KEY) return true;
+    if (page.superAdminOnly) return isFullAccess;
+    return isFullAccess || granted.has(page.key);
+  });
 
   return (
     <aside className="flex shrink-0 flex-col border-r border-gold/15 bg-[#0A0D0C] lg:h-screen lg:w-[244px] lg:sticky lg:top-0">
@@ -43,7 +49,7 @@ export function AdminSidebar({ email }: { email: string }) {
       </div>
 
       <nav className="flex gap-1 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:overflow-y-auto">
-        {NAV.map((item) => (
+        {nav.map((item) => (
           <Link
             key={item.href}
             href={item.href}

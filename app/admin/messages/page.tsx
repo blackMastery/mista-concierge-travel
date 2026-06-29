@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/lib/admin";
 import { PageHeader, Card, EmptyState, StatusBadge } from "@/components/admin/ui";
 import { MessageActions } from "@/components/admin/LeadControls";
 import { getAdminMessages } from "@/lib/admin-queries";
 
 export default async function AdminMessagesPage() {
+  await requirePageAccess("messages");
   const messages = await getAdminMessages();
   return (
     <div>

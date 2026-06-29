@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/admin";
+import { requirePageAccess } from "@/lib/admin";
 import type { Json, TourPricing, PaymentTerms } from "@/lib/database.types";
 import { tourPricingToRows } from "@/lib/tour-pricing";
 import { sendBookingStatusEmail } from "@/lib/email";
@@ -65,7 +65,7 @@ async function syncTourPricing(
 }
 
 export async function createTour(input: TourInput): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { pricing, ...tourFields } = input;
   const { data, error } = await supabase
@@ -81,7 +81,7 @@ export async function createTour(input: TourInput): Promise<void> {
 }
 
 export async function updateTour(id: string, input: TourInput): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { pricing, ...tourFields } = input;
   const { error } = await supabase.from("tours").update(tourFields).eq("id", id);
@@ -98,7 +98,7 @@ export async function updateTour(id: string, input: TourInput): Promise<Result> 
 }
 
 export async function deleteTour(id: string): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   await supabase.from("tours").delete().eq("id", id);
   revalidatePublic();
@@ -110,7 +110,7 @@ export async function setTourPublished(
   id: string,
   isPublished: boolean,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tours")
@@ -132,7 +132,7 @@ export async function addTourImage(
   url: string,
   inCarousel: boolean,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { count } = await supabase
     .from("tour_images")
@@ -150,7 +150,7 @@ export async function addTourImage(
 }
 
 export async function deleteTourImage(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { error } = await supabase.from("tour_images").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -159,7 +159,7 @@ export async function deleteTourImage(id: string): Promise<Result> {
 }
 
 export async function addHighlight(tourId: string, text: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { count } = await supabase
     .from("tour_highlights")
@@ -174,7 +174,7 @@ export async function addHighlight(tourId: string, text: string): Promise<Result
 }
 
 export async function deleteHighlight(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { error } = await supabase.from("tour_highlights").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -187,7 +187,7 @@ export async function addItineraryDay(
   title: string,
   body: string,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { count } = await supabase
     .from("tour_itinerary")
@@ -202,7 +202,7 @@ export async function addItineraryDay(
 }
 
 export async function deleteItineraryDay(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { error } = await supabase.from("tour_itinerary").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -215,7 +215,7 @@ export async function addInclusion(
   kind: "included" | "excluded",
   text: string,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { count } = await supabase
     .from("tour_inclusions")
@@ -231,7 +231,7 @@ export async function addInclusion(
 }
 
 export async function deleteInclusion(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   const { error } = await supabase.from("tour_inclusions").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -243,7 +243,7 @@ export async function setTourActivities(
   tourId: string,
   activityIds: string[],
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("tours");
   const supabase = await createClient();
   await supabase.from("tour_activities").delete().eq("tour_id", tourId);
   if (activityIds.length) {
@@ -276,7 +276,7 @@ export type DestinationInput = {
 };
 
 export async function createDestination(input: DestinationInput): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("destinations");
   const supabase = await createClient();
   const { error } = await supabase.from("destinations").insert(input);
   if (error) throw new Error(error.message);
@@ -288,7 +288,7 @@ export async function updateDestination(
   id: string,
   input: DestinationInput,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("destinations");
   const supabase = await createClient();
   const { error } = await supabase.from("destinations").update(input).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -297,7 +297,7 @@ export async function updateDestination(
 }
 
 export async function deleteDestination(id: string): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("destinations");
   const supabase = await createClient();
   await supabase.from("destinations").delete().eq("id", id);
   revalidatePublic();
@@ -317,7 +317,7 @@ export type TestimonialInput = {
 };
 
 export async function createTestimonial(input: TestimonialInput): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("testimonials");
   const supabase = await createClient();
   const { error } = await supabase.from("testimonials").insert(input);
   if (error) throw new Error(error.message);
@@ -329,7 +329,7 @@ export async function updateTestimonial(
   id: string,
   input: TestimonialInput,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("testimonials");
   const supabase = await createClient();
   const { error } = await supabase.from("testimonials").update(input).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -338,7 +338,7 @@ export async function updateTestimonial(
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("testimonials");
   const supabase = await createClient();
   await supabase.from("testimonials").delete().eq("id", id);
   revalidatePublic();
@@ -357,7 +357,7 @@ export type TeamInput = {
 };
 
 export async function createTeamMember(input: TeamInput): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("team");
   const supabase = await createClient();
   const { error } = await supabase.from("team_members").insert(input);
   if (error) throw new Error(error.message);
@@ -366,7 +366,7 @@ export async function createTeamMember(input: TeamInput): Promise<void> {
 }
 
 export async function updateTeamMember(id: string, input: TeamInput): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("team");
   const supabase = await createClient();
   const { error } = await supabase.from("team_members").update(input).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -375,7 +375,7 @@ export async function updateTeamMember(id: string, input: TeamInput): Promise<Re
 }
 
 export async function deleteTeamMember(id: string): Promise<void> {
-  await requireAdmin();
+  await requirePageAccess("team");
   const supabase = await createClient();
   await supabase.from("team_members").delete().eq("id", id);
   revalidatePublic();
@@ -389,7 +389,7 @@ export async function setReviewPublished(
   id: string,
   isPublished: boolean,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("reviews");
   const supabase = await createClient();
   const { error } = await supabase
     .from("reviews")
@@ -402,7 +402,7 @@ export async function setReviewPublished(
 }
 
 export async function deleteReview(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("reviews");
   const supabase = await createClient();
   const { error } = await supabase.from("reviews").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -415,7 +415,7 @@ export async function deleteReview(id: string): Promise<Result> {
 // SITE CONTENT (jsonb blocks)
 // ===========================================================================
 export async function updateSiteContent(key: string, value: Json): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("content");
   const supabase = await createClient();
   const { error } = await supabase
     .from("site_content")
@@ -432,7 +432,7 @@ export async function updateBookingStatus(
   id: string,
   status: "pending" | "confirmed" | "cancelled",
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("bookings");
   const supabase = await createClient();
 
   const { data: existing } = await supabase
@@ -480,7 +480,7 @@ export async function updateBookingNotes(
   id: string,
   adminNotes: string,
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("bookings");
   const supabase = await createClient();
   const { error } = await supabase
     .from("booking_requests")
@@ -495,7 +495,7 @@ export async function setMessageStatus(
   id: string,
   status: "new" | "read" | "archived",
 ): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("messages");
   const supabase = await createClient();
   const { error } = await supabase
     .from("contact_messages")
@@ -508,7 +508,7 @@ export async function setMessageStatus(
 }
 
 export async function deleteMessage(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("messages");
   const supabase = await createClient();
   const { error } = await supabase.from("contact_messages").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -517,7 +517,7 @@ export async function deleteMessage(id: string): Promise<Result> {
 }
 
 export async function deleteSubscriber(id: string): Promise<Result> {
-  await requireAdmin();
+  await requirePageAccess("subscribers");
   const supabase = await createClient();
   const { error } = await supabase.from("newsletter_subscribers").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };

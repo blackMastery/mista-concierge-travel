@@ -6,8 +6,15 @@ import {
   getAdminMessages,
 } from "@/lib/admin-queries";
 import { formatPrice } from "@/lib/format";
+import { requireAdmin } from "@/lib/admin";
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  await requireAdmin();
+  const { error } = await searchParams;
   const [counts, bookings, messages] = await Promise.all([
     getDashboardCounts(),
     getAdminBookings(),
@@ -25,6 +32,12 @@ export default async function AdminDashboard() {
   return (
     <div>
       <PageHeader title="Dashboard" subtitle="Overview of content and recent activity." />
+
+      {error === "forbidden" && (
+        <div className="mb-6 rounded-lg border border-coral/30 bg-coral/[0.08] px-4 py-3 font-sans text-[13.5px] font-medium text-coral">
+          You don&apos;t have access to that section. Ask a super admin to grant it.
+        </div>
+      )}
 
       <div className="mb-10 grid grid-cols-5 gap-4 max-[900px]:grid-cols-2 max-[480px]:grid-cols-1">
         {stats.map((s) => (

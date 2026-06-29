@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/lib/admin";
 import { PageHeader, Card, EmptyState, StatusBadge } from "@/components/admin/ui";
 import { ReviewControls } from "@/components/admin/LeadControls";
 import { getAdminReviews } from "@/lib/admin-queries";
 
 export default async function AdminReviewsPage() {
+  await requirePageAccess("reviews");
   const reviews = await getAdminReviews();
 
   return (

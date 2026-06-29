@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader, Card } from "@/components/admin/ui";
@@ -11,6 +12,7 @@ export default async function EditTeamMemberPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageAccess("team");
   const { id } = await params;
   const member = await getAdminTeamById(id);
   if (!member) notFound();

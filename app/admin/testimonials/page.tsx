@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { PageHeader, Card, LinkButton, EmptyState } from "@/components/admin/ui";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
@@ -5,6 +6,7 @@ import { getAdminTestimonials } from "@/lib/admin-queries";
 import { deleteTestimonial } from "@/app/admin/actions";
 
 export default async function AdminTestimonialsPage() {
+  await requirePageAccess("testimonials");
   const items = await getAdminTestimonials();
   return (
     <div>

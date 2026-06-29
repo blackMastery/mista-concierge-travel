@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { PageHeader, Card } from "@/components/admin/ui";
 import { TourForm } from "@/components/admin/TourForm";
@@ -5,6 +6,7 @@ import { getDestinationOptions } from "@/lib/admin-queries";
 import { getDefaultPaymentTerms } from "@/lib/queries";
 
 export default async function NewTourPage() {
+  await requirePageAccess("tours");
   const [destinations, defaultPaymentTerms] = await Promise.all([
     getDestinationOptions(),
     getDefaultPaymentTerms(),

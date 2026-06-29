@@ -1,8 +1,10 @@
+import { requirePageAccess } from "@/lib/admin";
 import { PageHeader, Card, EmptyState } from "@/components/admin/ui";
 import { ExportSubscribersButton, SubscriberDelete } from "@/components/admin/LeadControls";
 import { getAdminSubscribers } from "@/lib/admin-queries";
 
 export default async function AdminSubscribersPage() {
+  await requirePageAccess("subscribers");
   const subscribers = await getAdminSubscribers();
   return (
     <div>

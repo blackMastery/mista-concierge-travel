@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import Image from "next/image";
 import { PageHeader, Card, LinkButton, EmptyState } from "@/components/admin/ui";
@@ -6,6 +7,7 @@ import { getAdminTeam } from "@/lib/admin-queries";
 import { deleteTeamMember } from "@/app/admin/actions";
 
 export default async function AdminTeamPage() {
+  await requirePageAccess("team");
   const team = await getAdminTeam();
   return (
     <div>

@@ -60,11 +60,11 @@ export function Header() {
       setSignedIn(!!userId);
       if (!userId) return setIsAdmin(false);
       const { data } = await supabase
-        .from("profiles")
-        .select("is_admin")
+        .from("admin_users")
+        .select("is_active")
         .eq("id", userId)
         .maybeSingle();
-      setIsAdmin(!!data?.is_admin);
+      setIsAdmin(!!data?.is_active);
     }
     supabase.auth.getUser().then(({ data }) => sync(data.user?.id));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) =>

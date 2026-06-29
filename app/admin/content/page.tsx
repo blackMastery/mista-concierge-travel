@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import { PageHeader, Card } from "@/components/admin/ui";
 import {
   ObjectBlockEditor,
@@ -23,6 +24,7 @@ import type { PaymentTerms } from "@/lib/database.types";
 type Obj = Record<string, string>;
 
 export default async function AdminContentPage() {
+  await requirePageAccess("content");
   const content = await getSiteContent();
   const get = <T,>(key: string, fallback: T): T =>
     (content[key] as T | undefined) ?? fallback;

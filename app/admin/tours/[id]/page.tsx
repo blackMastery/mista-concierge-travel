@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader, Card, StatusBadge } from "@/components/admin/ui";
@@ -24,6 +25,7 @@ export default async function EditTourPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageAccess("tours");
   const { id } = await params;
   const [tour, destinations, activityOptions, defaultPaymentTerms] = await Promise.all([
     getAdminTourById(id),

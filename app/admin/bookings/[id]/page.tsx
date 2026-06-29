@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader, Card } from "@/components/admin/ui";
@@ -20,6 +21,7 @@ export default async function AdminBookingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageAccess("bookings");
   const { id } = await params;
   const booking = await getAdminBookingById(id);
   if (!booking) notFound();

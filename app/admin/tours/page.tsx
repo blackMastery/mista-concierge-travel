@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { PageHeader, Card, LinkButton, EmptyState, StatusBadge } from "@/components/admin/ui";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
@@ -7,6 +8,7 @@ import { deleteTour } from "@/app/admin/actions";
 import { formatPrice } from "@/lib/format";
 
 export default async function AdminToursPage() {
+  await requirePageAccess("tours");
   const tours = await getAdminTours();
 
   return (

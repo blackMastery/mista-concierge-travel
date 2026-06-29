@@ -176,6 +176,23 @@ export type ProfileRow = {
   created_at: string;
 }
 
+export type AdminRole = "admin" | "super_admin";
+
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  role: AdminRole;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AdminUserPageRow = {
+  admin_user_id: string;
+  page_key: string;
+}
+
 export type FavoriteRow = {
   user_id: string;
   tour_id: string;
@@ -249,6 +266,13 @@ export type Database = {
       team_members: TableDef<TeamMemberRow>;
       site_content: TableDef<SiteContentRow>;
       profiles: TableDef<ProfileRow>;
+      admin_users: TableDef<AdminUserRow>;
+      admin_user_pages: {
+        Row: AdminUserPageRow;
+        Insert: AdminUserPageRow;
+        Update: Partial<AdminUserPageRow>;
+        Relationships: [];
+      };
       favorites: {
         Row: FavoriteRow;
         Insert: { user_id: string; tour_id: string; created_at?: string };
@@ -280,6 +304,14 @@ export type Database = {
           created_at: string;
         }[];
       };
+      make_admin: {
+        Args: { p_email: string; p_full_name?: string; p_role?: string };
+        Returns: AdminUserRow;
+      };
+      revoke_admin: {
+        Args: { p_email: string };
+        Returns: AdminUserRow;
+      };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
@@ -300,3 +332,4 @@ export type Testimonial = TestimonialRow;
 export type TeamMember = TeamMemberRow;
 export type Profile = ProfileRow;
 export type BookingRequest = BookingRequestRow;
+export type AdminUser = AdminUserRow;

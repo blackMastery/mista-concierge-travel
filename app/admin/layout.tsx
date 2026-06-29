@@ -14,11 +14,15 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireAdmin();
+  const ctx = await requireAdmin();
 
   return (
     <div className="min-h-screen bg-sand lg:flex">
-      <AdminSidebar email={user.email ?? "admin"} />
+      <AdminSidebar
+        email={ctx.user.email ?? "admin"}
+        isFullAccess={ctx.isFullAccess}
+        allowedPages={[...ctx.allowedPages]}
+      />
       <div className="min-w-0 flex-1">
         <div className="mx-auto max-w-[1100px] px-6 py-8 max-[640px]:px-4">
           {children}

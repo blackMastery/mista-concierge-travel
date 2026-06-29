@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
 import { PageHeader, Card, LinkButton, EmptyState, StatusBadge } from "@/components/admin/ui";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
@@ -5,6 +6,7 @@ import { getAdminDestinations } from "@/lib/admin-queries";
 import { deleteDestination } from "@/app/admin/actions";
 
 export default async function AdminDestinationsPage() {
+  await requirePageAccess("destinations");
   const destinations = await getAdminDestinations();
   return (
     <div>

@@ -1,3 +1,4 @@
+import { requirePageAccess } from "@/lib/admin";
 import { Suspense } from "react";
 import Link from "next/link";
 import { PageHeader, Card, EmptyState } from "@/components/admin/ui";
@@ -38,6 +39,7 @@ export default async function AdminBookingsPage({
 }: {
   searchParams: Promise<{ status?: string; q?: string }>;
 }) {
+  await requirePageAccess("bookings");
   const { status = "all", q = "" } = await searchParams;
   const allBookings = await getAdminBookings();
   const bookings = filterBookings(allBookings, status, q);
