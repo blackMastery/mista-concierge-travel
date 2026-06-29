@@ -19,17 +19,21 @@ import type {
 const toGyd = (cents: number) => (cents ? String(Math.round(cents / 100)) : "");
 const toCents = (s: string) => Math.round(Number(s || 0) * 100);
 
+export const DEFAULT_CHILD_TIERS: ChildTier[] = [
+  { key: "child_2_12", label: "Children 2–12", price_cents: 0 },
+  { key: "child_under_2", label: "Children under 2", price_cents: 0 },
+];
+
+export const DEFAULT_OCCUPANCY_TIERS: OccupancyTier[] = [
+  { occupants: 1, label: "Solo traveler — private room", price_cents: 0 },
+  { occupants: 2, label: "2 persons / room", price_cents: 0 },
+  { occupants: 3, label: "3 persons / room", price_cents: 0 },
+  { occupants: 4, label: "4 persons / room", price_cents: 0 },
+];
+
 export const DEFAULT_PRICING: TourPricing = {
-  occupancy: [
-    { occupants: 1, label: "Solo traveler — private room", price_cents: 0 },
-    { occupants: 2, label: "2 persons / room", price_cents: 0 },
-    { occupants: 3, label: "3 persons / room", price_cents: 0 },
-    { occupants: 4, label: "4 persons / room", price_cents: 0 },
-  ],
-  children: [
-    { key: "child_2_12", label: "Children 2–12", price_cents: 0 },
-    { key: "child_under_2", label: "Children under 2", price_cents: 0 },
-  ],
+  occupancy: DEFAULT_OCCUPANCY_TIERS,
+  children: DEFAULT_CHILD_TIERS,
 };
 
 export const DEFAULT_PAYMENT_TERMS: PaymentTerms = {
@@ -98,6 +102,18 @@ export function OccupancyPricingFields({
       children: v.children.map((t, idx) => (idx === i ? { ...t, ...patch } : t)),
     });
   }
+  function setAllowsChildren(on: boolean) {
+    onChange({
+      ...v,
+      children: on
+        ? v.children.length
+          ? v.children
+          : DEFAULT_CHILD_TIERS.map((t) => ({ ...t }))
+        : [],
+    });
+  }
+
+  const allowsChildren = v.children.length > 0;
 
   return (
     <div className={cardCls}>
@@ -107,14 +123,20 @@ export function OccupancyPricingFields({
             Occupancy &amp; children pricing
           </h3>
           <p className="m-0 mt-1 text-[13px] text-muted-light">
-            Flat rates by room occupancy (total for that tier), plus per-child
-            add-ons. Amounts in GYD. Leave off to use the single starting price
-            above.
+            Flat rates by room occupancy (total for that tier), with optional
+            per-child add-ons. Amounts in GYD. Leave off to use the single
+            starting price above.
           </p>
         </div>
         <Toggle
           checked={value !== null}
-          onChange={(on) => onChange(on ? DEFAULT_PRICING : null)}
+          onChange={(on) =>
+            onChange(
+              on
+                ? { occupancy: DEFAULT_OCCUPANCY_TIERS, children: [] }
+                : null,
+            )
+          }
           label="Configure"
         />
       </div>
@@ -181,38 +203,51 @@ export function OccupancyPricingFields({
           </div>
 
           <div>
-            <h4 className="m-0 mb-2.5 font-sans text-[14px] font-semibold text-ink">
-              Children (price per child)
-            </h4>
-            <div className="flex flex-col gap-3">
-              {v.children.map((c, i) => (
-                <div
-                  key={c.key}
-                  className="grid grid-cols-[1fr_180px] items-end gap-3 rounded-lg border border-ink/10 bg-cream/40 p-3.5 max-[700px]:grid-cols-1"
-                >
-                  <div>
-                    <label className={labelCls}>Label</label>
-                    <input
-                      className={inputCls}
-                      value={c.label}
-                      onChange={(e) => setChild(i, { label: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Price / child (GYD)</label>
-                    <input
-                      className={inputCls}
-                      type="number"
-                      min="0"
-                      value={toGyd(c.price_cents)}
-                      onChange={(e) =>
-                        setChild(i, { price_cents: toCents(e.target.value) })
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
+            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-3">
+              <h4 className="m-0 font-sans text-[14px] font-semibold text-ink">
+                Children occupancy
+              </h4>
+              <Toggle
+                checked={allowsChildren}
+                onChange={setAllowsChildren}
+                label="Allow children"
+              />
             </div>
+            {allowsChildren ? (
+              <div className="flex flex-col gap-3">
+                {v.children.map((c, i) => (
+                  <div
+                    key={c.key}
+                    className="grid grid-cols-[1fr_180px] items-end gap-3 rounded-lg border border-ink/10 bg-cream/40 p-3.5 max-[700px]:grid-cols-1"
+                  >
+                    <div>
+                      <label className={labelCls}>Label</label>
+                      <input
+                        className={inputCls}
+                        value={c.label}
+                        onChange={(e) => setChild(i, { label: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Price / child (GYD)</label>
+                      <input
+                        className={inputCls}
+                        type="number"
+                        min="0"
+                        value={toGyd(c.price_cents)}
+                        onChange={(e) =>
+                          setChild(i, { price_cents: toCents(e.target.value) })
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="m-0 rounded-lg bg-cream/60 p-3.5 text-[13px] text-ink-soft">
+                Bookings use room occupancy only — no child add-ons on this tour.
+              </p>
+            )}
           </div>
         </div>
       )}
