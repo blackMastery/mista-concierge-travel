@@ -235,6 +235,33 @@ export type NewsletterSubscriberRow = {
   created_at: string;
 }
 
+export type EmailTemplateRow = {
+  id: string;
+  slug: string;
+  name: string;
+  subject: string;
+  body_html: string;
+  is_active: boolean;
+  is_system: boolean;
+  created_by: string | null;
+  modified_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EmailLogRow = {
+  id: string;
+  template_slug: string | null;
+  to_email: string;
+  subject: string;
+  status: "sent" | "failed" | "logged";
+  provider_id: string | null;
+  error: string | null;
+  booking_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
 // --- Table helper: Row / Insert / Update / Relationships -------------------
 
 type TableDef<Row> = {
@@ -287,6 +314,8 @@ export type Database = {
         Update: Partial<NewsletterSubscriberRow>;
         Relationships: [];
       };
+      email_templates: TableDef<EmailTemplateRow>;
+      email_log: TableDef<EmailLogRow>;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -332,4 +361,6 @@ export type Testimonial = TestimonialRow;
 export type TeamMember = TeamMemberRow;
 export type Profile = ProfileRow;
 export type BookingRequest = BookingRequestRow;
+export type EmailTemplate = EmailTemplateRow;
+export type EmailLog = EmailLogRow;
 export type AdminUser = AdminUserRow;

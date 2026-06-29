@@ -10,6 +10,8 @@ import type {
   TourItinerary,
   TourInclusion,
   TourPricingRow,
+  EmailTemplateRow,
+  EmailLogRow,
 } from "@/lib/database.types";
 
 // All admin reads run as the signed-in admin; RLS grants full visibility
@@ -233,4 +235,54 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     newMessages: newMessages.count ?? 0,
     subscribers: subscribers.count ?? 0,
   };
+}
+
+export async function getAdminEmailTemplates(): Promise<EmailTemplateRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_templates")
+    .select("*")
+    .order("is_system", { ascending: false })
+    .order("name", { ascending: true });
+  return (data as EmailTemplateRow[]) ?? [];
+}
+
+export async function getAdminEmailLog(limit = 25): Promise<EmailLogRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data as EmailLogRow[]) ?? [];
+}
+
+export async function getAdminEmailTemplateById(
+  id: string,
+): Promise<EmailTemplateRow | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_templates")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data as EmailTemplateRow | null;
+}
+
+export async function getProfileLabels(
+  ids: string[],
+): Promise<Record<string, string>> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return {};
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", unique);
+  const map: Record<string, string> = {};
+  for (const row of data ?? []) {
+    const p = row as { id: string; full_name: string | null };
+    map[p.id] = p.full_name?.trim() || `${p.id.slice(0, 8)}…`;
+  }
+  return map;
 }

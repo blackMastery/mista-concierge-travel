@@ -26,6 +26,7 @@ export const ADMIN_PAGES: AdminPage[] = [
   { key: "content", label: "Site Content", href: "/admin/content", icon: "✎" },
   { key: "bookings", label: "Bookings", href: "/admin/bookings", icon: "🧭" },
   { key: "messages", label: "Messages", href: "/admin/messages", icon: "✉" },
+  { key: "email-templates", label: "Email templates", href: "/admin/email-templates", icon: "📧" },
   { key: "subscribers", label: "Subscribers", href: "/admin/subscribers", icon: "@" },
   { key: "access", label: "Admins", href: "/admin/access", icon: "👥", superAdminOnly: true },
 ];

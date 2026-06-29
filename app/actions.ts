@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
 import {
-  buildTrackUrl,
-  sendBookingConfirmationEmails,
+  sendBookingEmail,
+  sendBookingAdminEmail,
 } from "@/lib/email";
 
 export type ActionResult = { ok: boolean; error?: string; referenceCode?: string };
@@ -192,12 +192,6 @@ export async function createBookingRequest(
     resolvedName = (profile as { full_name: string | null } | null)?.full_name?.trim() || contactName;
   }
 
-  const { data: tour } = await supabase
-    .from("tours")
-    .select("title")
-    .eq("id", input.tourId)
-    .maybeSingle();
-
   const insertPayload = {
     tour_id: input.tourId,
     user_id: user?.id ?? null,
@@ -248,24 +242,17 @@ export async function createBookingRequest(
     return { ok: false, error: "Could not submit your request." };
   }
 
-  const breakdown = input.pricingBreakdown as {
-    deposit_cents?: number;
-  } | null;
-
-  void sendBookingConfirmationEmails({
-    bookingId: bookingId ?? referenceCode,
-    referenceCode,
-    tourTitle: (tour as { title: string } | null)?.title ?? "Tour",
-    travelDate,
-    travelers: input.travelers,
-    totalCents: input.totalCents,
-    depositCents: breakdown?.deposit_cents,
-    contactName: resolvedName,
-    contactEmail,
-    contactPhone,
-    specialRequests: specialRequests ?? undefined,
-    trackUrl: buildTrackUrl(referenceCode),
+  void sendBookingEmail({
+    bookingId: bookingId ?? undefined,
+    referenceCode: bookingId ? undefined : referenceCode,
+    slug: "booking_confirmation",
   }).catch((err) => console.error("[booking] email failed:", err));
+
+  void sendBookingAdminEmail({
+    bookingId: bookingId ?? undefined,
+    referenceCode: bookingId ? undefined : referenceCode,
+    slug: "booking_confirmation_admin",
+  }).catch((err) => console.error("[booking] admin email failed:", err));
 
   if (user) revalidatePath("/account");
   return { ok: true, referenceCode };

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/admin";
 import type { Json, TourPricing, PaymentTerms } from "@/lib/database.types";
 import { tourPricingToRows } from "@/lib/tour-pricing";
-import { sendBookingStatusEmail } from "@/lib/email";
+import { sendBookingEmail } from "@/lib/email";
 
 export type Result = { ok: boolean; error?: string };
 
@@ -432,7 +432,7 @@ export async function updateBookingStatus(
   id: string,
   status: "pending" | "confirmed" | "cancelled",
 ): Promise<Result> {
-  await requirePageAccess("bookings");
+  const ctx = await requirePageAccess("bookings");
   const supabase = await createClient();
 
   const { data: existing } = await supabase
@@ -461,19 +461,46 @@ export async function updateBookingStatus(
     (status === "confirmed" || status === "cancelled") &&
     row.contact_email
   ) {
-    void sendBookingStatusEmail({
-      referenceCode: row.reference_code,
-      tourTitle: row.tours?.title ?? "Tour",
-      contactName: row.contact_name ?? "Traveler",
-      contactEmail: row.contact_email,
-      status,
+    const slug =
+      status === "confirmed" ? "booking_confirmed" : "booking_cancelled";
+    void sendBookingEmail({
+      bookingId: id,
+      slug,
+      sentBy: ctx.user.id,
     }).catch((err) => console.error("[booking] status email failed:", err));
   }
+
+  revalidatePath("/admin/email-templates");
 
   revalidatePath("/admin/bookings");
   revalidatePath(`/admin/bookings/${id}`);
   revalidatePath("/admin");
   return { ok: true };
+}
+
+export async function resendBookingEmail(
+  bookingId: string,
+  slug: string,
+): Promise<Result & { message?: string }> {
+  const ctx = await requirePageAccess("bookings");
+  const allowed = ["booking_confirmation", "booking_confirmed", "booking_cancelled"];
+  if (!allowed.includes(slug)) {
+    return { ok: false, error: "Invalid template." };
+  }
+
+  const result = await sendBookingEmail({
+    bookingId,
+    slug,
+    sentBy: ctx.user.id,
+  });
+
+  revalidatePath("/admin/email-templates");
+  revalidatePath(`/admin/bookings/${bookingId}`);
+
+  if (result.status === "failed") {
+    return { ok: false, error: result.message };
+  }
+  return { ok: true, message: result.message };
 }
 
 export async function updateBookingNotes(

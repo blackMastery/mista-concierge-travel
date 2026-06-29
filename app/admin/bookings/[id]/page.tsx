@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { PageHeader, Card } from "@/components/admin/ui";
 import { BookingStatusSelect } from "@/components/admin/LeadControls";
 import { BookingNotesEditor } from "@/components/admin/BookingNotesEditor";
-import { getAdminBookingById } from "@/lib/admin-queries";
+import { BookingEmailPanel } from "@/components/admin/BookingEmailPanel";
+import { getAdminBookingById, getAdminEmailTemplates } from "@/lib/admin-queries";
 import { formatPrice, formatDate } from "@/lib/format";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -23,8 +24,15 @@ export default async function AdminBookingDetailPage({
 }) {
   await requirePageAccess("bookings");
   const { id } = await params;
-  const booking = await getAdminBookingById(id);
+  const [booking, emailTemplates] = await Promise.all([
+    getAdminBookingById(id),
+    getAdminEmailTemplates(),
+  ]);
   if (!booking) notFound();
+
+  const templatesActive = Object.fromEntries(
+    emailTemplates.map((t) => [t.slug, t.is_active]),
+  );
 
   const breakdown = booking.pricing_breakdown as {
     occupancy_label?: string | null;
@@ -145,6 +153,12 @@ export default async function AdminBookingDetailPage({
             </h2>
             <BookingStatusSelect id={booking.id} status={booking.status} />
           </Card>
+
+          <BookingEmailPanel
+            bookingId={booking.id}
+            contactEmail={booking.contact_email}
+            templatesActive={templatesActive}
+          />
 
           <Card>
             <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">
