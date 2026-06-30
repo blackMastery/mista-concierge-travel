@@ -5,13 +5,18 @@ import { useEffect, useState, useTransition } from "react";
 import { createBookingRequest } from "@/app/actions";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice, formatDate } from "@/lib/format";
+import { isValidEmail } from "@/lib/validation";
+import {
+  computeBookingTotalCents,
+  computeDepositCents,
+  computePeopleCount,
+  type BookingSelection,
+} from "@/lib/pricing";
 import type { TourPricing, PaymentTerms } from "@/lib/database.types";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export function BookingWidget({
   tourId,
@@ -34,7 +39,7 @@ export function BookingWidget({
 
   const [date, setDate] = useState("");
   const [occIdx, setOccIdx] = useState(0);
-  const [adults, setAdults] = useState(2);
+  const [adults, setAdults] = useState(() => occupancy[0]?.occupants ?? 2);
   const [childCounts, setChildCounts] = useState<number[]>(() =>
     childTiers.map(() => 0),
   );
@@ -62,24 +67,16 @@ export function BookingWidget({
     });
   }, []);
 
-  const selectedTier = occupancy[occIdx] ?? occupancy[0];
-  const childTotal = childCounts.reduce((a, b) => a + b, 0);
-  const people = hasTiers ? adults + childTotal : travelers;
-
-  const totalCents = hasTiers
-    ? (selectedTier?.price_cents ?? 0) +
-      childCounts.reduce(
-        (sum, n, i) => sum + n * (childTiers[i]?.price_cents ?? 0),
-        0,
-      )
-    : basePriceCents * travelers;
-
-  const depositCents =
-    paymentTerms && depositOpen
-      ? paymentTerms.deposit_per === "person"
-        ? paymentTerms.deposit_cents * people
-        : paymentTerms.deposit_cents
-      : 0;
+  // The selection — never a price. Mirrors exactly what the server recomputes,
+  // so the figures shown here can never diverge from what gets persisted.
+  const selection: BookingSelection = {
+    occupancyIndex: hasTiers ? occIdx : null,
+    childCounts,
+    travelers,
+  };
+  const people = computePeopleCount(pricing, selection);
+  const totalCents = computeBookingTotalCents(pricing, basePriceCents, selection);
+  const depositCents = computeDepositCents(paymentTerms, depositOpen, people);
 
   function setChild(i: number, v: number) {
     setChildCounts((s) => s.map((n, idx) => (idx === i ? Math.max(0, v) : n)));
@@ -89,7 +86,7 @@ export function BookingWidget({
     if (!date) return "Please select a travel date.";
     if (date < todayISO()) return "Travel date must be today or later.";
     if (!contactName.trim()) return "Please enter your name.";
-    if (!EMAIL_RE.test(contactEmail.trim())) return "Please enter a valid email.";
+    if (!isValidEmail(contactEmail)) return "Please enter a valid email.";
     if (!contactPhone.trim()) return "Please enter your phone number.";
     if (people < 1) return "Please select at least one traveler.";
     return null;
@@ -103,34 +100,14 @@ export function BookingWidget({
     }
     setError("");
 
-    const breakdown = hasTiers
-      ? {
-          occupancy_label: selectedTier?.label ?? null,
-          occupants: selectedTier?.occupants ?? null,
-          tier_price_cents: selectedTier?.price_cents ?? null,
-          adults,
-          children: childTiers.map((c, i) => ({
-            key: c.key,
-            label: c.label,
-            count: childCounts[i] ?? 0,
-            price_cents: c.price_cents,
-          })),
-          deposit_cents: depositCents,
-          total_cents: totalCents,
-        }
-      : {
-          deposit_cents: depositCents,
-          total_cents: totalCents,
-        };
-
     startTransition(async () => {
       const res = await createBookingRequest({
         tourId,
         travelDate: date,
-        travelers: people,
+        occupancyIndex: selection.occupancyIndex,
+        childCounts: selection.childCounts,
+        travelers: selection.travelers,
         insurance: false,
-        totalCents,
-        pricingBreakdown: breakdown,
         contactName: contactName.trim(),
         contactEmail: contactEmail.trim(),
         contactPhone: contactPhone.trim(),

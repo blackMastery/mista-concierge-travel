@@ -3,10 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
+import { isValidEmail } from "@/lib/validation";
+import { contactSchema, newsletterEmailSchema, bookingSchema } from "@/lib/schemas";
+import { getBookingPricingContext } from "@/lib/queries";
+import {
+  computeBookingTotalCents,
+  computePeopleCount,
+  buildPricingBreakdown,
+  selectionFitsPricing,
+  type BookingSelection,
+} from "@/lib/pricing";
 import {
   sendBookingEmail,
   sendBookingAdminEmail,
 } from "@/lib/email";
+
+function firstZodError(error: { issues: { message: string }[] }): string {
+  return error.issues[0]?.message ?? "Please check your details and try again.";
+}
 
 export type ActionResult = { ok: boolean; error?: string; referenceCode?: string };
 
@@ -75,10 +89,11 @@ export async function toggleFavorite(
 // Newsletter
 // ---------------------------------------------------------------------------
 export async function subscribeNewsletter(email: string): Promise<ActionResult> {
-  const clean = email.trim().toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) {
+  const parsed = newsletterEmailSchema.safeParse(email);
+  if (!parsed.success) {
     return { ok: false, error: "Please enter a valid email address." };
   }
+  const clean = parsed.data;
   const supabase = await createClient();
   const { error } = await supabase
     .from("newsletter_subscribers")
@@ -102,18 +117,17 @@ export type ContactInput = {
 };
 
 export async function submitContact(input: ContactInput): Promise<ActionResult> {
-  const name = input.name.trim();
-  const email = input.email.trim();
-  const message = input.message.trim();
-  if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !message) {
-    return { ok: false, error: "Please complete the required fields." };
+  const parsed = contactSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: firstZodError(parsed.error) };
   }
+  const { name, email, phone, interest, message } = parsed.data;
   const supabase = await createClient();
   const { error } = await supabase.from("contact_messages").insert({
     name,
     email,
-    phone: input.phone?.trim() || null,
-    interest: input.interest || null,
+    phone: phone || null,
+    interest: interest || null,
     message,
   });
   if (error) return { ok: false, error: "Could not send your message." };
@@ -123,13 +137,15 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
 // ---------------------------------------------------------------------------
 // Booking request
 // ---------------------------------------------------------------------------
+// The client sends the customer's *selection*, never a price. The server
+// recomputes the authoritative total from the tour's stored pricing.
 export type BookingInput = {
   tourId: string;
   travelDate: string;
+  occupancyIndex: number | null;
+  childCounts: number[];
   travelers: number;
   insurance: boolean;
-  totalCents: number;
-  pricingBreakdown?: unknown;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
@@ -155,27 +171,56 @@ export type BookingStatusResult = {
 export async function createBookingRequest(
   input: BookingInput,
 ): Promise<ActionResult> {
-  const contactName = input.contactName.trim();
-  const contactEmail = input.contactEmail.trim().toLowerCase();
-  const contactPhone = input.contactPhone.trim();
-  const travelDate = input.travelDate.trim();
-  const specialRequests = input.specialRequests?.trim() || null;
+  const parsed = bookingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: firstZodError(parsed.error) };
+  }
+  const data = parsed.data;
 
-  if (!contactName) {
-    return { ok: false, error: "Please enter your name." };
+  const contactName = data.contactName;
+  const contactEmail = data.contactEmail.toLowerCase();
+  const contactPhone = data.contactPhone;
+  const travelDate = data.travelDate;
+  const specialRequests = data.specialRequests || null;
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  if (travelDate < todayISO) {
+    return { ok: false, error: "Travel date must be today or later." };
   }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) {
-    return { ok: false, error: "Please enter a valid email address." };
+
+  // Load the tour's authoritative pricing and recompute the total server-side.
+  // The browser never gets to set the price.
+  const ctx = await getBookingPricingContext(data.tourId);
+  if (!ctx) {
+    return { ok: false, error: "This tour is not available for booking." };
   }
-  if (!contactPhone) {
-    return { ok: false, error: "Please enter your phone number." };
+
+  const selection: BookingSelection = {
+    occupancyIndex: data.occupancyIndex,
+    childCounts: data.childCounts,
+    travelers: data.travelers,
+  };
+  if (!selectionFitsPricing(ctx.pricing, selection)) {
+    return { ok: false, error: "Please review your selection and try again." };
   }
-  if (!travelDate) {
-    return { ok: false, error: "Please select a travel date." };
-  }
-  if (input.travelers < 1) {
+
+  const people = computePeopleCount(ctx.pricing, selection);
+  if (people < 1) {
     return { ok: false, error: "Please select at least one traveler." };
   }
+
+  const totalCents = computeBookingTotalCents(
+    ctx.pricing,
+    ctx.basePriceCents,
+    selection,
+  );
+  const pricingBreakdown = buildPricingBreakdown(
+    ctx.pricing,
+    ctx.basePriceCents,
+    ctx.paymentTerms,
+    ctx.depositOpen,
+    selection,
+  );
 
   const supabase = await createClient();
   const {
@@ -193,13 +238,13 @@ export async function createBookingRequest(
   }
 
   const insertPayload = {
-    tour_id: input.tourId,
+    tour_id: data.tourId,
     user_id: user?.id ?? null,
     travel_date: travelDate,
-    travelers: input.travelers,
-    insurance: input.insurance,
-    total_cents: input.totalCents,
-    pricing_breakdown: (input.pricingBreakdown ?? null) as Json,
+    travelers: people,
+    insurance: data.insurance,
+    total_cents: totalCents,
+    pricing_breakdown: pricingBreakdown as Json,
     contact_name: resolvedName,
     contact_email: contactEmail,
     contact_phone: contactPhone,
@@ -264,7 +309,7 @@ export async function trackBooking(
 ): Promise<BookingStatusResult> {
   const ref = reference.trim();
   const cleanEmail = email.trim().toLowerCase();
-  if (!ref || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail)) {
+  if (!ref || !isValidEmail(cleanEmail)) {
     return { ok: false, error: "Please enter your reference and email." };
   }
 

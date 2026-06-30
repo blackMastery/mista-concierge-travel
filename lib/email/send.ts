@@ -5,6 +5,7 @@ import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
 import { buildSampleVars } from "@/lib/email/variables";
 import { renderTemplate } from "@/lib/email/render";
 import { formatPrice } from "@/lib/format";
+import { isValidEmail } from "@/lib/validation";
 import {
   buildBookingEmailContext,
   getEmailBrand,
@@ -71,7 +72,7 @@ async function insertEmailLog(row: {
 
 export async function sendEmail(opts: SendEmailOpts): Promise<SendResult> {
   const to = opts.to?.trim();
-  if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
+  if (!to || !isValidEmail(to)) {
     await insertEmailLog({
       template_slug: opts.templateSlug,
       to_email: to || "(invalid)",

@@ -5,7 +5,7 @@ import {
   sortTours,
   type TourFilters,
 } from "@/lib/tour-filters";
-import { withAssembledPricing } from "@/lib/tour-pricing";
+import { rowsToTourPricing, withAssembledPricing } from "@/lib/tour-pricing";
 import type {
   Tour,
   Destination,
@@ -17,6 +17,7 @@ import type {
   TourItinerary,
   TourInclusion,
   PaymentTerms,
+  TourPricing,
   TourPricingRow,
 } from "@/lib/database.types";
 
@@ -217,6 +218,52 @@ export async function getDefaultPaymentTerms(): Promise<PaymentTerms | null> {
       .eq("key", "payment_terms")
       .maybeSingle();
     return (data?.value as PaymentTerms | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Server-side pricing context for a booking. Loads the authoritative base
+// price, tier pricing and resolved payment terms so createBookingRequest can
+// recompute the total instead of trusting the browser. Returns null when the
+// tour does not exist or is not published.
+export type BookingPricingContext = {
+  basePriceCents: number;
+  pricing: TourPricing | null;
+  paymentTerms: PaymentTerms | null;
+  depositOpen: boolean;
+};
+
+export async function getBookingPricingContext(
+  tourId: string,
+): Promise<BookingPricingContext | null> {
+  if (!hasEnv) return null;
+  try {
+    const supabase = createStaticClient();
+    const { data } = await supabase
+      .from("tours")
+      .select("price_cents, payment_terms, tour_pricing(*)")
+      .eq("id", tourId)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (!data) return null;
+
+    const row = data as unknown as {
+      price_cents: number;
+      payment_terms: PaymentTerms | null;
+      tour_pricing: TourPricingRow[];
+    };
+    const pricing = rowsToTourPricing(row.tour_pricing ?? []);
+    const terms = row.payment_terms ?? (await getDefaultPaymentTerms());
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const depositOpen = !terms?.deadline || todayISO <= terms.deadline;
+
+    return {
+      basePriceCents: row.price_cents,
+      pricing,
+      paymentTerms: terms,
+      depositOpen,
+    };
   } catch {
     return null;
   }

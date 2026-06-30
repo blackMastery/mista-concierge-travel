@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { submitContact } from "@/app/actions";
+import { isValidEmail } from "@/lib/validation";
 
 const INTERESTS = [
   "St. Lucia",
@@ -30,7 +31,7 @@ export function ContactForm() {
   function validate(): Errors {
     const e: Errors = {};
     if (!f.name.trim()) e.name = true;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) e.email = true;
+    if (!isValidEmail(f.email)) e.email = true;
     if (!f.message.trim()) e.message = true;
     return e;
   }
