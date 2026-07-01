@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { Json } from "@/lib/database.types";
 import type { BookingDetail as BookingDetailType } from "@/lib/account-queries";
 import { formatPrice, formatDate } from "@/lib/format";
+import { maskPassportNumber } from "@/lib/travelers";
+import { countryLabel } from "@/lib/countries";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-gold/15 text-gold-deep",
@@ -72,6 +74,39 @@ export function BookingDetailView({
           <dt className="text-muted">Travelers</dt>
           <dd className="m-0 font-semibold text-ink">{booking.travelers}</dd>
         </div>
+        {booking.travelers_detail.length > 0 && (
+          <div className="border-t border-ink/[0.06] pt-3">
+            <dt className="mb-2 text-[12px] font-semibold uppercase tracking-[1px] text-muted">
+              Traveler manifest
+            </dt>
+            <dd className="m-0">
+              <ul className="m-0 list-none space-y-2 p-0">
+                {booking.travelers_detail.map((t) => (
+                  <li
+                    key={t.id}
+                    className="rounded-lg bg-cream/50 px-3 py-2 text-[13px]"
+                  >
+                    <div className="font-semibold text-ink">{t.full_name}</div>
+                    <div className="text-muted">
+                      {t.traveler_type === "child"
+                        ? t.child_tier_label ?? "Child"
+                        : "Adult"}
+                      {" · "}
+                      DOB {formatDate(t.date_of_birth)}
+                      {t.passport_complete && t.passport_number && (
+                        <>
+                          {" · "}
+                          Passport {maskPassportNumber(t.passport_number)}
+                          {t.nationality ? ` (${countryLabel(t.nationality)})` : ""}
+                        </>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        )}
         {booking.insurance && (
           <div className="flex justify-between gap-4 text-[14px]">
             <dt className="text-muted">Travel insurance</dt>

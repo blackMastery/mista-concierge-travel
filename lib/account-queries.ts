@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
+import type { BookingTravelerDetail } from "@/lib/database.types";
 import type { AccountBooking, TravelPreferences } from "@/lib/account";
 import { isReviewEligibleBooking, todayISO } from "@/lib/account";
 
@@ -27,6 +28,7 @@ export type BookingDetail = {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  travelers_detail: BookingTravelerDetail[];
   created_at: string;
 };
 
@@ -70,7 +72,11 @@ export async function getBookingDetailByReference(
     p_reference: reference,
   });
   if (error || !data?.length) return null;
-  return data[0] as BookingDetail;
+  const row = data[0] as BookingDetail & { travelers_detail?: BookingTravelerDetail[] | null };
+  return {
+    ...row,
+    travelers_detail: Array.isArray(row.travelers_detail) ? row.travelers_detail : [],
+  };
 }
 
 export async function getBookingMessages(bookingId: string): Promise<BookingMessage[]> {

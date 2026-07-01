@@ -1,6 +1,6 @@
 import type { Json, PaymentTerms, TourPricing } from "@/lib/database.types";
 
-// Single source of truth for booking price math. Both the client BookingWidget
+// Single source of truth for booking price math. Used by the booking wizard
 // (for live display) and the server action (for the authoritative, persisted
 // total) call these pure functions so they can never disagree.
 

@@ -6,9 +6,10 @@ import { BookingStatusSelect } from "@/components/admin/LeadControls";
 import { BookingNotesEditor } from "@/components/admin/BookingNotesEditor";
 import { BookingEmailPanel } from "@/components/admin/BookingEmailPanel";
 import { BookingMessagesPanel } from "@/components/admin/BookingMessagesPanel";
-import { getAdminBookingById, getAdminEmailTemplates } from "@/lib/admin-queries";
+import { getAdminBookingById, getAdminBookingTravelers, getAdminEmailTemplates } from "@/lib/admin-queries";
 import { getBookingMessages } from "@/lib/account-queries";
 import { formatPrice, formatDate } from "@/lib/format";
+import { countryLabel } from "@/lib/countries";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -26,9 +27,10 @@ export default async function AdminBookingDetailPage({
 }) {
   await requirePageAccess("bookings");
   const { id } = await params;
-  const [booking, emailTemplates] = await Promise.all([
+  const [booking, emailTemplates, travelers] = await Promise.all([
     getAdminBookingById(id),
     getAdminEmailTemplates(),
+    getAdminBookingTravelers(id),
   ]);
   if (!booking) notFound();
 
@@ -130,6 +132,74 @@ export default async function AdminBookingDetailPage({
                   ) : null,
                 )}
               </dl>
+            </Card>
+          )}
+
+          {travelers.length > 0 && (
+            <Card>
+              <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">
+                Traveler manifest
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] border-collapse text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-ink/[0.08] text-muted">
+                      <th className="py-2 pr-3 font-semibold">#</th>
+                      <th className="py-2 pr-3 font-semibold">Name</th>
+                      <th className="py-2 pr-3 font-semibold">Type</th>
+                      <th className="py-2 pr-3 font-semibold">DOB</th>
+                      <th className="py-2 pr-3 font-semibold">Gender</th>
+                      <th className="py-2 pr-3 font-semibold">Passport</th>
+                      <th className="py-2 pr-3 font-semibold">Expiry</th>
+                      <th className="py-2 font-semibold">Nationality</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {travelers.map((t) => {
+                      const passportComplete =
+                        t.passport_number && t.passport_expiry && t.nationality;
+                      return (
+                        <tr key={t.id} className="border-b border-ink/[0.06]">
+                          <td className="py-3 pr-3">{t.position}</td>
+                          <td className="py-3 pr-3 font-medium">{t.full_name}</td>
+                          <td className="py-3 pr-3 capitalize">
+                            {t.traveler_type === "child"
+                              ? t.child_tier_label ?? "Child"
+                              : "Adult"}
+                          </td>
+                          <td className="py-3 pr-3">
+                            {formatDate(t.date_of_birth)}
+                          </td>
+                          <td className="py-3 pr-3 capitalize">{t.gender}</td>
+                          <td className="py-3 pr-3">
+                            {passportComplete ? (
+                              t.passport_number
+                            ) : (
+                              <span className="rounded-md bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-gold-deep">
+                                Incomplete
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 pr-3">
+                            {t.passport_expiry
+                              ? formatDate(t.passport_expiry)
+                              : "—"}
+                          </td>
+                          <td className="py-3">
+                            {t.nationality
+                              ? countryLabel(t.nationality)
+                              : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mb-0 mt-3 text-[12px] text-muted">
+                Passport data is sensitive — handle in accordance with your
+                privacy policy.
+              </p>
             </Card>
           )}
 

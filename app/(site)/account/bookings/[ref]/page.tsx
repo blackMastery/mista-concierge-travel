@@ -8,6 +8,7 @@ import {
 } from "@/lib/account-queries";
 import { BookingDetailView } from "@/components/account/BookingDetailView";
 import { BookingMessageThread } from "@/components/account/BookingMessageThread";
+import { TravelerPassportPanel } from "@/components/account/TravelerPassportPanel";
 import { ReviewForm } from "@/components/account/ReviewForm";
 import { buildMetadata } from "@/lib/seo";
 
@@ -55,6 +56,11 @@ export default async function AccountBookingDetailPage({
 
       <div className="flex flex-col gap-6">
         <BookingDetailView booking={booking} variant="account" />
+        <TravelerPassportPanel
+          travelers={booking.travelers_detail}
+          travelDate={booking.travel_date}
+          status={booking.status}
+        />
         <BookingMessageThread bookingId={booking.id} messages={messages} />
         {canReview && (
           <ReviewForm tourId={booking.tour_id} bookingId={booking.id} />

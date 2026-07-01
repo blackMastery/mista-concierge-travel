@@ -179,6 +179,16 @@ export async function getAdminBookingById(
   return (data as unknown as AdminBooking) ?? null;
 }
 
+export async function getAdminBookingTravelers(bookingId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("booking_travelers")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .order("position", { ascending: true });
+  return data ?? [];
+}
+
 export type AdminMessage = {
   id: string;
   name: string;

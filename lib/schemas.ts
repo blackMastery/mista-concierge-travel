@@ -22,6 +22,38 @@ export const contactSchema = z.object({
 });
 export type ContactValues = z.infer<typeof contactSchema>;
 
+const isoDateField = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Please enter a valid date.");
+
+export const travelerGenderSchema = z.enum(["male", "female", "unspecified"]);
+
+export const travelerBasicSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(1, "Please enter the traveler's full name.")
+    .max(200),
+  dateOfBirth: isoDateField,
+  gender: travelerGenderSchema,
+});
+export type TravelerBasicValues = z.infer<typeof travelerBasicSchema>;
+
+export const travelerPassportSchema = z.object({
+  travelerId: z.string().uuid("Invalid traveler."),
+  passportNumber: z
+    .string()
+    .trim()
+    .min(1, "Please enter a passport number.")
+    .max(50),
+  passportExpiry: isoDateField,
+  nationality: z.string().trim().min(1, "Please select a nationality.").max(100),
+  referenceCode: z.string().trim().max(20).optional(),
+  email: emailField.optional(),
+});
+export type TravelerPassportValues = z.infer<typeof travelerPassportSchema>;
+
 // The booking input is now a *selection*, never a price. The server recomputes
 // the authoritative total from this via lib/pricing.ts.
 export const bookingSchema = z.object({
@@ -35,6 +67,7 @@ export const bookingSchema = z.object({
   contactEmail: emailField,
   contactPhone: z.string().trim().min(1, "Please enter your phone number.").max(50),
   specialRequests: z.string().trim().max(2000).optional(),
+  travelerDetails: z.array(travelerBasicSchema).max(50).optional(),
 });
 export type BookingValues = z.infer<typeof bookingSchema>;
 

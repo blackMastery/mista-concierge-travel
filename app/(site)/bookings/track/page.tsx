@@ -5,8 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition, Suspense } from "react";
 import { trackBooking } from "@/app/actions";
 import { Eyebrow } from "@/components/ui";
+import { TravelerPassportPanel } from "@/components/account/TravelerPassportPanel";
 import { formatPrice, formatDate } from "@/lib/format";
-import type { Json } from "@/lib/database.types";
+import type { BookingTravelerDetail, Json } from "@/lib/database.types";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-gold/15 text-gold-deep",
@@ -15,6 +16,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 type BookingResult = {
+  id: string;
   reference_code: string;
   tour_title: string;
   tour_slug: string;
@@ -23,6 +25,7 @@ type BookingResult = {
   total_cents: number;
   status: string;
   pricing_breakdown: Json | null;
+  travelers_detail: BookingTravelerDetail[];
   created_at: string;
 };
 
@@ -49,6 +52,14 @@ function TrackForm() {
       } else {
         setError(res.error ?? "Booking not found.");
       }
+    });
+  }
+
+  function refreshBooking() {
+    if (!reference.trim() || !email.trim()) return;
+    startTransition(async () => {
+      const res = await trackBooking(reference, email);
+      if (res.ok && res.booking) setBooking(res.booking);
     });
   }
 
@@ -199,6 +210,19 @@ function TrackForm() {
               Your concierge is reviewing availability. You&apos;ll receive an email when your booking is confirmed.
             </p>
           )}
+        </div>
+      )}
+
+      {booking && booking.travelers_detail.length > 0 && (
+        <div className="mt-6">
+          <TravelerPassportPanel
+            travelers={booking.travelers_detail}
+            travelDate={booking.travel_date}
+            status={booking.status}
+            referenceCode={booking.reference_code}
+            email={email}
+            onRefresh={refreshBooking}
+          />
         </div>
       )}
     </div>

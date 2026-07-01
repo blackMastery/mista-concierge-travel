@@ -12,6 +12,7 @@ import {
   passwordSchema,
   emailUpdateSchema,
   claimBookingSchema,
+  travelerPassportSchema,
 } from "@/lib/schemas";
 import { canUserReviewTour } from "@/lib/account-queries";
 import {
@@ -20,6 +21,7 @@ import {
   isReviewEligibleBooking,
   todayISO,
 } from "@/lib/account";
+import { validatePassportExpiry } from "@/lib/travelers";
 import { signOut } from "@/app/actions";
 
 export type AccountActionResult = { ok: boolean; error?: string; claimed?: number };
@@ -273,5 +275,58 @@ export async function sendAdminBookingMessage(input: {
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/bookings");
+  return { ok: true };
+}
+
+export async function updateTravelerPassport(input: {
+  travelerId: string;
+  passportNumber: string;
+  passportExpiry: string;
+  nationality: string;
+  referenceCode?: string;
+  email?: string;
+  travelDate?: string | null;
+}): Promise<AccountActionResult> {
+  const parsed = travelerPassportSchema.safeParse({
+    travelerId: input.travelerId,
+    passportNumber: input.passportNumber,
+    passportExpiry: input.passportExpiry,
+    nationality: input.nationality,
+    referenceCode: input.referenceCode,
+    email: input.email,
+  });
+  if (!parsed.success) return { ok: false, error: firstZodError(parsed.error) };
+
+  if (input.travelDate) {
+    const expiryError = validatePassportExpiry(
+      parsed.data.passportExpiry,
+      input.travelDate,
+    );
+    if (expiryError) return { ok: false, error: expiryError };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && (!parsed.data.referenceCode || !parsed.data.email)) {
+    return { ok: false, error: "Please sign in or provide your booking reference." };
+  }
+
+  const { data, error } = await supabase.rpc("update_traveler_passport", {
+    p_traveler_id: parsed.data.travelerId,
+    p_passport_number: parsed.data.passportNumber,
+    p_passport_expiry: parsed.data.passportExpiry,
+    p_nationality: parsed.data.nationality,
+    p_reference: parsed.data.referenceCode ?? null,
+    p_email: parsed.data.email ?? null,
+  });
+
+  if (error) return { ok: false, error: "Could not save passport details." };
+  if (!data) return { ok: false, error: "Could not update this traveler." };
+
+  revalidatePath("/account/bookings");
+  revalidatePath("/bookings/track");
   return { ok: true };
 }

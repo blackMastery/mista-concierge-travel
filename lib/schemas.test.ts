@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bookingSchema, contactSchema, newsletterEmailSchema } from "@/lib/schemas";
+import { bookingSchema, contactSchema, newsletterEmailSchema, travelerBasicSchema } from "@/lib/schemas";
 import { computeBookingTotalCents } from "@/lib/pricing";
 import type { TourPricing } from "@/lib/database.types";
 
@@ -53,6 +53,38 @@ describe("bookingSchema", () => {
 
   it("rejects a missing tour id", () => {
     expect(bookingSchema.safeParse({ ...validBookingInput, tourId: "not-a-uuid" }).success).toBe(false);
+  });
+
+  it("accepts optional traveler details for tiered bookings", () => {
+    const result = bookingSchema.safeParse({
+      ...validBookingInput,
+      occupancyIndex: 0,
+      childCounts: [0],
+      travelerDetails: [
+        { fullName: "Jane Traveler", dateOfBirth: "1990-01-01", gender: "female" },
+        { fullName: "John Traveler", dateOfBirth: "1992-03-15", gender: "male" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("travelerBasicSchema", () => {
+  it("requires full name, DOB, and gender", () => {
+    expect(
+      travelerBasicSchema.safeParse({
+        fullName: "",
+        dateOfBirth: "1990-01-01",
+        gender: "female",
+      }).success,
+    ).toBe(false);
+    expect(
+      travelerBasicSchema.safeParse({
+        fullName: "Jane Traveler",
+        dateOfBirth: "1990-01-01",
+        gender: "female",
+      }).success,
+    ).toBe(true);
   });
 });
 

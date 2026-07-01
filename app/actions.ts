@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { Json } from "@/lib/database.types";
+import type { Json, BookingTravelerDetail } from "@/lib/database.types";
 import { isValidEmail } from "@/lib/validation";
 import { contactSchema, newsletterEmailSchema, bookingSchema } from "@/lib/schemas";
 import { getBookingPricingContext } from "@/lib/queries";
@@ -11,8 +11,13 @@ import {
   computePeopleCount,
   buildPricingBreakdown,
   selectionFitsPricing,
+  hasTierPricing,
   type BookingSelection,
 } from "@/lib/pricing";
+import {
+  expandTravelerSlots,
+  validateTravelerAgeForSlot,
+} from "@/lib/travelers";
 import {
   sendBookingEmail,
   sendBookingAdminEmail,
@@ -150,12 +155,18 @@ export type BookingInput = {
   contactEmail: string;
   contactPhone: string;
   specialRequests?: string;
+  travelerDetails?: {
+    fullName: string;
+    dateOfBirth: string;
+    gender: "male" | "female" | "unspecified";
+  }[];
 };
 
 export type BookingStatusResult = {
   ok: boolean;
   error?: string;
   booking?: {
+    id: string;
     reference_code: string;
     tour_title: string;
     tour_slug: string;
@@ -164,6 +175,7 @@ export type BookingStatusResult = {
     total_cents: number;
     status: string;
     pricing_breakdown: Json | null;
+    travelers_detail: BookingTravelerDetail[];
     created_at: string;
   };
 };
@@ -222,6 +234,27 @@ export async function createBookingRequest(
     selection,
   );
 
+  const tiered = hasTierPricing(ctx.pricing);
+  const slots = tiered ? expandTravelerSlots(ctx.pricing, selection) : [];
+
+  if (tiered) {
+    const details = data.travelerDetails ?? [];
+    if (details.length !== people) {
+      return {
+        ok: false,
+        error: "Please enter details for every traveler in your party.",
+      };
+    }
+    for (let i = 0; i < slots.length; i++) {
+      const ageError = validateTravelerAgeForSlot(
+        slots[i],
+        details[i].dateOfBirth,
+        travelDate,
+      );
+      if (ageError) return { ok: false, error: ageError };
+    }
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -257,36 +290,75 @@ export async function createBookingRequest(
     special_requests: specialRequests,
   };
 
-  // Guest inserts cannot use `.select()` — RLS only allows select when
-  // auth.uid() = user_id, and null = null is not true for anonymous users.
   let referenceCode = "";
   let bookingId: string | null = null;
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    referenceCode = generateBookingReference();
-    const row = { ...insertPayload, reference_code: referenceCode };
+  if (tiered && slots.length > 0) {
+    const travelersJson = slots.map((slot, i) => ({
+      position: slot.position,
+      is_primary: slot.position === 1,
+      traveler_type: slot.travelerType,
+      child_tier_key: slot.childTierKey,
+      child_tier_label: slot.childTierLabel,
+      full_name: data.travelerDetails![i].fullName,
+      date_of_birth: data.travelerDetails![i].dateOfBirth,
+      gender: data.travelerDetails![i].gender,
+    }));
 
-    if (user) {
-      const { data, error } = await supabase
-        .from("booking_requests")
-        .insert(row)
-        .select("id, reference_code")
-        .single();
-      if (!error && data) {
-        bookingId = (data as { id: string; reference_code: string }).id;
-        referenceCode = (data as { id: string; reference_code: string }).reference_code;
-        break;
-      }
-      if (error?.code === "23505") continue;
-      console.error("[booking] insert failed:", error?.message);
+    const { data: created, error } = await supabase.rpc(
+      "create_booking_with_travelers",
+      {
+        p_tour_id: data.tourId,
+        p_user_id: user?.id ?? null,
+        p_travel_date: travelDate,
+        p_travelers_count: people,
+        p_insurance: data.insurance,
+        p_total_cents: totalCents,
+        p_pricing_breakdown: pricingBreakdown as Json,
+        p_contact_name: resolvedName,
+        p_contact_email: contactEmail,
+        p_contact_phone: contactPhone,
+        p_special_requests: specialRequests,
+        p_travelers: travelersJson as Json,
+      },
+    );
+
+    if (error || !created?.length) {
+      console.error("[booking] RPC insert failed:", error?.message);
       return { ok: false, error: "Could not submit your request." };
     }
 
-    const { error } = await supabase.from("booking_requests").insert(row);
-    if (!error) break;
-    if (error.code === "23505") continue;
-    console.error("[booking] insert failed:", error.message);
-    return { ok: false, error: "Could not submit your request." };
+    bookingId = created[0].id;
+    referenceCode = created[0].reference_code;
+  } else {
+    // Flat pricing — existing insert path (no per-traveler manifest).
+    for (let attempt = 0; attempt < 5; attempt++) {
+      referenceCode = generateBookingReference();
+      const row = { ...insertPayload, reference_code: referenceCode };
+
+      if (user) {
+        const { data: inserted, error } = await supabase
+          .from("booking_requests")
+          .insert(row)
+          .select("id, reference_code")
+          .single();
+        if (!error && inserted) {
+          bookingId = (inserted as { id: string; reference_code: string }).id;
+          referenceCode = (inserted as { id: string; reference_code: string })
+            .reference_code;
+          break;
+        }
+        if (error?.code === "23505") continue;
+        console.error("[booking] insert failed:", error?.message);
+        return { ok: false, error: "Could not submit your request." };
+      }
+
+      const { error } = await supabase.from("booking_requests").insert(row);
+      if (!error) break;
+      if (error.code === "23505") continue;
+      console.error("[booking] insert failed:", error.message);
+      return { ok: false, error: "Could not submit your request." };
+    }
   }
 
   if (!referenceCode) {
@@ -330,13 +402,20 @@ export async function trackBooking(
   }
 
   const rows = (data ?? []) as BookingStatusResult["booking"][];
-  const booking = rows[0];
-  if (!booking) {
+  const raw = rows[0];
+  if (!raw) {
     return {
       ok: false,
       error: "No booking found with that reference and email.",
     };
   }
+
+  const booking = {
+    ...raw,
+    travelers_detail: Array.isArray(raw.travelers_detail)
+      ? raw.travelers_detail
+      : [],
+  };
 
   return { ok: true, booking };
 }

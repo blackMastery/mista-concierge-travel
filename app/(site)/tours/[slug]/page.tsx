@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Carousel } from "@/components/tour/Carousel";
 import { Itinerary } from "@/components/tour/Itinerary";
 import { Gallery } from "@/components/tour/Gallery";
-import { BookingWidget } from "@/components/tour/BookingWidget";
+import { BookingSummaryCard } from "@/components/tour/BookingSummaryCard";
 import { MobileBookBar } from "@/components/tour/MobileBookBar";
 import { getTourBySlug, getTourSlugs, getDefaultPaymentTerms, getSiteContent } from "@/lib/queries";
 import { formatPrice, formatDate } from "@/lib/format";
@@ -344,9 +344,9 @@ export default async function TourDetailPage({
         </div>
 
         {/* RIGHT: BOOKING */}
-        <div id="booking-widget" className="sticky top-24 flex flex-col gap-[18px] max-[920px]:static">
-          <BookingWidget
-            tourId={tour.id}
+        <div className="sticky top-24 flex flex-col gap-[18px] max-[920px]:static">
+          <BookingSummaryCard
+            slug={tour.slug}
             basePriceCents={tour.price_cents}
             spotsLeft={tour.spots_left}
             pricing={tour.pricing}
@@ -382,6 +382,7 @@ export default async function TourDetailPage({
       </div>
 
       <MobileBookBar
+        slug={tour.slug}
         priceLabel={
           tourHasOccupancyPricing(tour)
             ? `From ${formatPrice(tourDisplayPriceCents(tour))}`

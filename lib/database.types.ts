@@ -276,6 +276,41 @@ export type BookingMessageRow = {
   created_at: string;
 }
 
+export type BookingTravelerRow = {
+  id: string;
+  booking_id: string;
+  position: number;
+  is_primary: boolean;
+  user_id: string | null;
+  traveler_type: "adult" | "child";
+  child_tier_key: string | null;
+  child_tier_label: string | null;
+  full_name: string;
+  date_of_birth: string;
+  gender: "male" | "female" | "unspecified";
+  passport_number: string | null;
+  passport_expiry: string | null;
+  nationality: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Traveler manifest entry returned by booking RPCs (travelers_detail jsonb). */
+export type BookingTravelerDetail = {
+  id: string;
+  position: number;
+  is_primary: boolean;
+  traveler_type: "adult" | "child";
+  child_tier_label: string | null;
+  full_name: string;
+  date_of_birth: string;
+  gender: "male" | "female" | "unspecified";
+  passport_number: string | null;
+  passport_expiry: string | null;
+  nationality: string | null;
+  passport_complete: boolean;
+}
+
 export type ReferralRow = {
   id: string;
   referrer_id: string;
@@ -340,6 +375,7 @@ export type Database = {
       email_templates: TableDef<EmailTemplateRow>;
       email_log: TableDef<EmailLogRow>;
       booking_messages: TableDef<BookingMessageRow>;
+      booking_travelers: TableDef<BookingTravelerRow>;
       referrals: TableDef<ReferralRow>;
     };
     Views: { [_ in never]: never };
@@ -347,6 +383,7 @@ export type Database = {
       get_booking_status: {
         Args: { p_reference: string; p_email: string };
         Returns: {
+          id: string;
           reference_code: string;
           tour_title: string;
           tour_slug: string;
@@ -355,6 +392,7 @@ export type Database = {
           total_cents: number;
           status: string;
           pricing_breakdown: Json | null;
+          travelers_detail: BookingTravelerDetail[] | Json;
           created_at: string;
         }[];
       };
@@ -376,8 +414,37 @@ export type Database = {
           contact_name: string | null;
           contact_email: string | null;
           contact_phone: string | null;
+          travelers_detail: BookingTravelerDetail[] | Json;
           created_at: string;
         }[];
+      };
+      create_booking_with_travelers: {
+        Args: {
+          p_tour_id: string;
+          p_user_id: string | null;
+          p_travel_date: string;
+          p_travelers_count: number;
+          p_insurance: boolean;
+          p_total_cents: number;
+          p_pricing_breakdown: Json;
+          p_contact_name: string;
+          p_contact_email: string;
+          p_contact_phone: string;
+          p_special_requests: string | null;
+          p_travelers: Json;
+        };
+        Returns: { id: string; reference_code: string }[];
+      };
+      update_traveler_passport: {
+        Args: {
+          p_traveler_id: string;
+          p_passport_number: string;
+          p_passport_expiry: string;
+          p_nationality: string;
+          p_reference?: string | null;
+          p_email?: string | null;
+        };
+        Returns: boolean;
       };
       claim_guest_bookings: {
         Args: Record<string, never>;
