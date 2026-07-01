@@ -16,7 +16,7 @@ export default async function AdminDestinationsPage() {
         action={<LinkButton href="/admin/destinations/new">+ New destination</LinkButton>}
       />
       {destinations.length === 0 ? (
-        <EmptyState icon="◉" text="No destinations yet." />
+        <EmptyState icon="map-pin" text="No destinations yet." />
       ) : (
         <Card className="!p-0">
           <div className="divide-y divide-ink/[0.06]">

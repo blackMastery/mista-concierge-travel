@@ -97,9 +97,9 @@ export const DEFAULT_BUSINESS_CONTACT: BusinessContact = {
 };
 
 export const DEFAULT_SOCIAL_LINKS: SocialLink[] = [
-  { label: "Instagram", icon: "IG", href: "#" },
-  { label: "Facebook", icon: "FB", href: "#" },
-  { label: "TripAdvisor", icon: "TA", href: "#" },
+  { label: "Instagram", icon: "instagram", href: "#" },
+  { label: "Facebook", icon: "facebook", href: "#" },
+  { label: "TripAdvisor", icon: "map-pin", href: "#" },
 ];
 
 export const DEFAULT_FOOTER: FooterContent = {
@@ -213,9 +213,9 @@ export type ContactChannel = {
 
 export function contactChannels(biz: BusinessContact): ContactChannel[] {
   return [
-    { icon: "☎", label: "Phone", value: biz.phone, href: biz.phone_href },
-    { icon: "✉", label: "Email", value: biz.email, href: `mailto:${biz.email}` },
-    { icon: "WA", label: "WhatsApp", value: biz.whatsapp_label, href: biz.whatsapp_href },
-    { icon: "◉", label: "Office", value: biz.office, href: "#" },
+    { icon: "phone", label: "Phone", value: biz.phone, href: biz.phone_href },
+    { icon: "mail", label: "Email", value: biz.email, href: `mailto:${biz.email}` },
+    { icon: "message-circle", label: "WhatsApp", value: biz.whatsapp_label, href: biz.whatsapp_href },
+    { icon: "map-pin", label: "Office", value: biz.office, href: "#" },
   ];
 }

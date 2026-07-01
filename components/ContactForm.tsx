@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Icon } from "@/components/icons";
 import { submitContact } from "@/app/actions";
 import { isValidEmail } from "@/lib/validation";
 
@@ -62,8 +63,8 @@ export function ContactForm() {
     return (
       <div className="rounded-[18px] bg-white p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] sm:p-10">
         <div className="py-10 text-center">
-          <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-green/[0.12] text-[36px] text-green">
-            ✓
+          <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-green/[0.12] text-green">
+            <Icon name="check" size={36} strokeWidth={2} />
           </div>
           <h2 className="m-0 mb-2.5 font-serif text-[28px] font-semibold text-ink">
             Message sent!

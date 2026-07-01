@@ -202,7 +202,7 @@ export default async function AdminContentPage() {
           <ArrayBlockEditor
             contentKey="pillars"
             fields={[
-              { name: "icon", label: "Icon (emoji)" },
+              { name: "icon", label: "Icon name (e.g. compass, shield, leaf)" },
               { name: "title", label: "Title" },
               { name: "body", label: "Body", textarea: true },
             ]}
@@ -252,7 +252,7 @@ export default async function AdminContentPage() {
           <ArrayBlockEditor
             contentKey="values"
             fields={[
-              { name: "icon", label: "Icon (emoji)" },
+              { name: "icon", label: "Icon name (e.g. compass, shield, leaf)" },
               { name: "title", label: "Title" },
               { name: "body", label: "Body", textarea: true },
             ]}

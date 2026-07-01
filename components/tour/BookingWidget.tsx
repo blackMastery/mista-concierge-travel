@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { createBookingRequest } from "@/app/actions";
+import { Icon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice, formatDate } from "@/lib/format";
 import { isValidEmail } from "@/lib/validation";
@@ -60,10 +61,11 @@ export function BookingWidget({
       if (user.email) setContactEmail(user.email);
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, phone")
         .eq("id", user.id)
         .maybeSingle();
       if (profile?.full_name) setContactName(profile.full_name);
+      if (profile?.phone) setContactPhone(profile.phone);
     });
   }, []);
 
@@ -159,8 +161,8 @@ export function BookingWidget({
 
       {booked ? (
         <div className="py-3.5 text-center" style={{ animation: "mcFadeIn 0.4s ease both" }}>
-          <div className="mx-auto mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-green/[0.12] text-[30px] text-green">
-            ✓
+          <div className="mx-auto mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-green/[0.12] text-green">
+            <Icon name="check" size={30} strokeWidth={2} />
           </div>
           <h3 className="m-0 mb-2 font-serif text-[22px] font-semibold text-ink">
             Request received!

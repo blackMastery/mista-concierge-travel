@@ -10,7 +10,7 @@ export default async function AdminMessagesPage() {
     <div>
       <PageHeader title="Messages" subtitle={`${messages.length} contact submissions`} />
       {messages.length === 0 ? (
-        <EmptyState icon="✉" text="No messages yet." />
+        <EmptyState icon="mail" text="No messages yet." />
       ) : (
         <div className="flex flex-col gap-3">
           {messages.map((m) => (

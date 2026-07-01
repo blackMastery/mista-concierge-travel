@@ -140,6 +140,8 @@ export type ReviewRow = {
   body: string;
   review_date: string;
   is_published: boolean;
+  user_id: string | null;
+  booking_id: string | null;
   created_at: string;
 }
 
@@ -172,6 +174,9 @@ export type ProfileRow = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  phone: string | null;
+  travel_preferences: Json | null;
+  referral_code: string;
   is_admin: boolean;
   created_at: string;
 }
@@ -262,6 +267,24 @@ export type EmailLogRow = {
   created_at: string;
 }
 
+export type BookingMessageRow = {
+  id: string;
+  booking_id: string;
+  user_id: string;
+  sender_role: "user" | "admin";
+  body: string;
+  created_at: string;
+}
+
+export type ReferralRow = {
+  id: string;
+  referrer_id: string;
+  referred_user_id: string;
+  referred_email: string;
+  status: "signed_up";
+  created_at: string;
+}
+
 // --- Table helper: Row / Insert / Update / Relationships -------------------
 
 type TableDef<Row> = {
@@ -316,6 +339,8 @@ export type Database = {
       };
       email_templates: TableDef<EmailTemplateRow>;
       email_log: TableDef<EmailLogRow>;
+      booking_messages: TableDef<BookingMessageRow>;
+      referrals: TableDef<ReferralRow>;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -332,6 +357,35 @@ export type Database = {
           pricing_breakdown: Json | null;
           created_at: string;
         }[];
+      };
+      get_own_booking_by_reference: {
+        Args: { p_reference: string };
+        Returns: {
+          id: string;
+          reference_code: string;
+          tour_id: string;
+          tour_title: string;
+          tour_slug: string;
+          travel_date: string | null;
+          travelers: number;
+          insurance: boolean;
+          total_cents: number;
+          status: string;
+          pricing_breakdown: Json | null;
+          special_requests: string | null;
+          contact_name: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          created_at: string;
+        }[];
+      };
+      claim_guest_bookings: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      claim_booking_by_reference: {
+        Args: { p_reference: string };
+        Returns: boolean;
       };
       make_admin: {
         Args: { p_email: string; p_full_name?: string; p_role?: string };

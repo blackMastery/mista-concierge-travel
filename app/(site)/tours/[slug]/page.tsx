@@ -11,6 +11,7 @@ import { formatPrice, formatDate } from "@/lib/format";
 import { DEFAULT_BUSINESS_CONTACT, resolveBlock } from "@/lib/site-content";
 import { tourDisplayPriceCents, tourHasOccupancyPricing } from "@/lib/tour-filters";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Icon, Stars } from "@/components/icons";
 import { buildMetadata, tourJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 
 export async function generateStaticParams() {
@@ -100,22 +101,26 @@ export default async function TourDetailPage({
       <div className="mx-auto grid max-w-[1280px] grid-cols-[1fr_380px] items-start gap-12 px-8 pb-20 pt-10 max-[920px]:grid-cols-1 max-[920px]:pb-28 max-[640px]:px-[22px]">
         {/* LEFT */}
         <div>
-          <span className="font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">
-            ◆ {tour.location}
+          <span className="inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold uppercase tracking-[1.5px] text-gold">
+            <Icon name="map-pin" size={13} strokeWidth={2.5} />
+            {tour.location}
           </span>
           <h1 className="m-0 mb-3.5 mt-2.5 font-serif text-[40px] font-bold leading-[1.12] text-ink max-[600px]:text-[30px]">
             {tour.title}
           </h1>
           <div className="mb-[30px] flex flex-wrap items-center gap-[18px]">
             <div className="flex items-center gap-2">
-              <span className="text-[16px] tracking-[1px] text-gold">★★★★★</span>
+              <Stars size={16} />
               <span className="text-[14px] text-muted">
                 <strong className="text-ink">{tour.rating.toFixed(1)}</strong> ·{" "}
                 {tour.reviews_count} reviews
               </span>
             </div>
             <span className="h-[18px] w-px bg-[#D9D2C2]" />
-            <span className="text-[14px] text-muted">⏱ {tour.duration_label}</span>
+            <span className="inline-flex items-center gap-1.5 text-[14px] text-muted">
+              <Icon name="clock" size={14} className="text-muted" />
+              {tour.duration_label}
+            </span>
             {tour.booked_last_24h ? (
               <>
                 <span className="h-[18px] w-px bg-[#D9D2C2]" />
@@ -228,8 +233,8 @@ export default async function TourDetailPage({
               <div className="grid grid-cols-2 gap-[13px] max-[600px]:grid-cols-1">
                 {tour.tour_highlights.map((h) => (
                   <div key={h.id} className="flex items-start gap-[11px]">
-                    <span className="mt-px flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-green/[0.12] text-[12px] text-green">
-                      ✓
+                    <span className="mt-px flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full bg-green/[0.12] text-green">
+                      <Icon name="check" size={12} strokeWidth={3} />
                     </span>
                     <span className="text-[14.5px] leading-[1.5] text-ink-soft">
                       {h.text}
@@ -264,7 +269,7 @@ export default async function TourDetailPage({
                   <div className="flex flex-col gap-[11px]">
                     {included.map((i) => (
                       <div key={i.id} className="flex items-center gap-2.5 text-[14px] text-ink-soft">
-                        <span className="font-bold text-green">✓</span>
+                        <Icon name="check" size={14} className="shrink-0 text-green" strokeWidth={3} />
                         {i.text}
                       </div>
                     ))}
@@ -277,7 +282,7 @@ export default async function TourDetailPage({
                   <div className="flex flex-col gap-[11px]">
                     {excluded.map((i) => (
                       <div key={i.id} className="flex items-center gap-2.5 text-[14px] text-muted-light">
-                        <span className="font-bold text-[#C0857E]">×</span>
+                        <Icon name="x" size={14} className="shrink-0 text-[#C0857E]" strokeWidth={3} />
                         {i.text}
                       </div>
                     ))}
@@ -305,7 +310,7 @@ export default async function TourDetailPage({
                     {tour.rating.toFixed(1)}
                   </span>
                   <div>
-                    <span className="text-[14px] tracking-[1px] text-gold">★★★★★</span>
+                    <Stars size={14} />
                     <div className="text-[12.5px] text-muted-light">
                       {tour.reviews_count} reviews
                     </div>
@@ -325,7 +330,7 @@ export default async function TourDetailPage({
                         </div>
                         <div className="text-[12px] text-muted-light">{r.review_date}</div>
                       </div>
-                      <span className="text-[13px] tracking-[1px] text-gold">★★★★★</span>
+                      <Stars size={13} />
                     </div>
                     <p className="m-0 text-[14.5px] leading-[1.65] text-ink-soft">{r.body}</p>
                   </div>
@@ -354,15 +359,21 @@ export default async function TourDetailPage({
             </h4>
             <div className="flex flex-col gap-3">
               <a href={biz.phone_href} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
-                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream">☎</span>
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream text-green">
+                  <Icon name="phone" size={16} />
+                </span>
                 {biz.phone}
               </a>
               <a href={`mailto:${biz.email}`} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
-                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream">✉</span>
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-cream text-green">
+                  <Icon name="mail" size={16} />
+                </span>
                 {biz.email}
               </a>
               <a href={biz.whatsapp_href} className="flex items-center gap-3 text-[14px] text-ink-soft no-underline">
-                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-green/[0.12] text-[11px] font-bold text-green">WA</span>
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-green/[0.12] text-green">
+                  <Icon name="message-circle" size={16} />
+                </span>
                 {biz.whatsapp_short_label}
               </a>
             </div>

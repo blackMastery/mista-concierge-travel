@@ -14,7 +14,7 @@ export default async function AdminSubscribersPage() {
         action={<ExportSubscribersButton rows={subscribers} />}
       />
       {subscribers.length === 0 ? (
-        <EmptyState icon="@" text="No subscribers yet." />
+        <EmptyState icon="at-sign" text="No subscribers yet." />
       ) : (
         <Card className="!p-0">
           <div className="divide-y divide-ink/[0.06]">

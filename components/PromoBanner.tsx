@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PromoBannerContent } from "@/lib/format";
+import { Icon } from "@/components/icons";
 
 export function PromoBanner({ content }: { content: PromoBannerContent }) {
   const pathname = usePathname();
@@ -48,7 +49,7 @@ export function PromoBanner({ content }: { content: PromoBannerContent }) {
               aria-label="Dismiss"
               className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-none bg-transparent text-[20px] leading-none text-sand"
             >
-              ×
+              <Icon name="x" size={20} />
             </button>
           </div>
         </motion.div>

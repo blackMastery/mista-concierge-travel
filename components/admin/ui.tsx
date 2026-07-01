@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import type { IconName } from "@/components/icons";
+import { Icon } from "@/components/icons";
 
 // Shared Tailwind class strings for admin forms/buttons (composed by client forms).
 export const inputCls =
@@ -71,15 +73,17 @@ export function Card({
 }
 
 export function EmptyState({
-  icon = "—",
+  icon = "inbox",
   text,
 }: {
-  icon?: string;
+  icon?: IconName;
   text: string;
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-ink/15 bg-white/50 p-12 text-center">
-      <div className="mb-2 text-[28px]">{icon}</div>
+      <div className="mb-2 flex justify-center text-green">
+        <Icon name={icon} size={28} strokeWidth={1.75} />
+      </div>
       <p className="m-0 text-[14px] text-muted">{text}</p>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { createClient } from "@/lib/supabase/client";
+import { Icon } from "@/components/icons";
 
 export function Carousel({
   images,
@@ -67,14 +68,14 @@ export function Carousel({
             aria-label="Previous"
             className="absolute left-[18px] top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-none bg-white/[0.92] text-[20px] text-ink shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:bg-white"
           >
-            ‹
+            <Icon name="chevron-left" size={24} />
           </button>
           <button
             onClick={() => setI((c) => (c + 1) % n)}
             aria-label="Next"
             className="absolute right-[18px] top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-none bg-white/[0.92] text-[20px] text-ink shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:bg-white"
           >
-            ›
+            <Icon name="chevron-right" size={24} />
           </button>
         </>
       )}
@@ -87,7 +88,12 @@ export function Carousel({
         className="absolute right-[18px] top-[18px] flex h-[46px] w-[46px] items-center justify-center rounded-full border-none bg-white/[0.92] text-[20px] hover:bg-white"
         style={{ color: fav ? "#FF6B5B" : "#2C2C2C" }}
       >
-        {fav ? "♥" : "♡"}
+        <Icon
+          name="heart"
+          size={20}
+          fill={fav ? "currentColor" : "none"}
+          strokeWidth={fav ? 0 : 2}
+        />
       </button>
     </div>
   );

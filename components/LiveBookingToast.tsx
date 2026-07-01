@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Icon } from "@/components/icons";
 
 // Social-proof toast that slides in shortly after the page loads, then leaves.
 export function LiveBookingToast() {
@@ -26,8 +27,8 @@ export function LiveBookingToast() {
           transition={{ duration: 0.4 }}
           className="fixed bottom-[max(26px,env(safe-area-inset-bottom))] left-[max(26px,env(safe-area-inset-left))] z-[900] flex max-w-[min(300px,calc(100vw-52px))] items-center gap-3.5 rounded-xl border-l-4 border-green bg-white px-[18px] py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.16)]"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cream text-[18px]">
-            🌴
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cream text-green">
+            <Icon name="palmtree" size={20} />
           </div>
           <div>
             <div className="font-sans text-[13.5px] font-semibold text-ink">

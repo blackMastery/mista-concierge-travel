@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
+import { Icon } from "@/components/icons";
 
 const NAV = [
   { label: "Home", href: "/" },
@@ -194,7 +195,7 @@ export function Header() {
               className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] border-none bg-transparent min-[861px]:hidden"
             >
               {open ? (
-                <span className="text-[22px] leading-none text-gold">×</span>
+                <Icon name="x" size={22} className="text-gold" />
               ) : (
                 <>
                   <span className="h-0.5 w-6 rounded bg-gold" />

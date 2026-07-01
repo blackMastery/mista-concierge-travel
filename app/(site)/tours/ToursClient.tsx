@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { TourCard } from "@/components/TourCard";
+import { Icon } from "@/components/icons";
 import { formatPrice } from "@/lib/format";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import {
@@ -88,7 +89,7 @@ function FilterPanel({
               aria-label="Close filters"
               className="flex h-11 w-11 items-center justify-center rounded-lg border-none bg-cream text-[22px] leading-none text-ink"
             >
-              ×
+              <Icon name="x" size={22} />
             </button>
           )}
         </div>
@@ -321,7 +322,15 @@ export function ToursClient({
         aria-expanded={sidebarOpen}
         className="mb-[18px] inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-ink/[0.12] bg-white px-[18px] py-[11px] font-sans text-[14px] font-semibold text-green min-[901px]:hidden"
       >
-        {sidebarOpen ? "× Close" : "☰ Filters"}
+        {sidebarOpen ? (
+          <>
+            <Icon name="x" size={16} /> Close
+          </>
+        ) : (
+          <>
+            <Icon name="sliders-horizontal" size={16} /> Filters
+          </>
+        )}
       </button>
 
       <div className="grid grid-cols-[280px_1fr] items-start gap-[34px] max-[900px]:grid-cols-1">
@@ -368,7 +377,9 @@ export function ToursClient({
             </div>
           ) : (
             <div className="rounded-2xl bg-white p-[60px] px-[30px] text-center shadow-[0_2px_8px_rgba(0,0,0,0.05)] max-[640px]:p-10 max-[640px]:px-6">
-              <div className="mb-3.5 text-[40px]">🧭</div>
+              <div className="mb-3.5 flex justify-center text-green">
+                <Icon name="compass" size={40} strokeWidth={1.5} />
+              </div>
               <h3 className="m-0 mb-2 font-serif text-[24px] font-semibold text-ink max-[640px]:text-[20px]">
                 No tours match your filters
               </h3>

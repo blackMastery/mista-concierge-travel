@@ -8,6 +8,7 @@ import {
   resolveBlock,
   resolveList,
 } from "@/lib/site-content";
+import { Icon } from "@/components/icons";
 
 export async function Footer() {
   const [featured, content] = await Promise.all([getFeaturedTours(), getSiteContent()]);
@@ -39,9 +40,9 @@ export async function Footer() {
                   key={s.label}
                   href={s.href}
                   aria-label={s.label}
-                  className="flex h-[38px] w-[38px] items-center justify-center rounded-lg bg-white/[0.06] font-sans text-[13px] font-semibold text-[#C9CFCB] no-underline transition-colors hover:bg-gold hover:text-[#1F2A26]"
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-lg bg-white/[0.06] text-[#C9CFCB] no-underline transition-colors hover:bg-gold hover:text-[#1F2A26]"
                 >
-                  {s.icon}
+                  <Icon name={s.icon} size={16} strokeWidth={1.75} />
                 </a>
               ))}
             </div>

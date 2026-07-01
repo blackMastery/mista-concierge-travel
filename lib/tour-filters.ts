@@ -32,8 +32,8 @@ export const DURATION_OPTIONS: { label: string; val: TourDurationFilter }[] = [
 
 export const RATING_OPTIONS: { label: string; val: number }[] = [
   { label: "Any rating", val: 0 },
-  { label: "4.5 ★ & up", val: 4.5 },
-  { label: "4.8 ★ & up", val: 4.8 },
+  { label: "4.5 & up", val: 4.5 },
+  { label: "4.8 & up", val: 4.8 },
 ];
 
 export const SORT_OPTIONS: { value: TourSort; label: string }[] = [

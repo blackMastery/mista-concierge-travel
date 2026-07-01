@@ -1,5 +1,6 @@
 import { Eyebrow } from "@/components/ui";
 import { ContactForm } from "@/components/ContactForm";
+import { Icon } from "@/components/icons";
 import { buildMetadata } from "@/lib/seo";
 import { getSiteContent } from "@/lib/queries";
 import {
@@ -63,8 +64,8 @@ export default async function ContactPage() {
               <div className="flex flex-col gap-[18px]">
                 {contacts.map((c) => (
                   <a key={c.label} href={c.href} className="flex items-start gap-3.5 no-underline">
-                    <span className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[10px] bg-cream text-[17px]">
-                      {c.icon}
+                    <span className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[10px] bg-cream text-green">
+                      <Icon name={c.icon} size={18} strokeWidth={1.75} />
                     </span>
                     <span>
                       <span className="mb-[3px] block font-sans text-[12px] font-semibold uppercase tracking-[0.5px] text-muted-light">
@@ -93,9 +94,9 @@ export default async function ContactPage() {
                     key={s.label}
                     href={s.href}
                     aria-label={s.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-sand/[0.12] font-sans text-[12px] font-semibold text-sand no-underline transition-colors hover:bg-gold"
+                    className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-sand/[0.12] text-sand no-underline transition-colors hover:bg-gold"
                   >
-                    {s.icon}
+                    <Icon name={s.icon} size={18} strokeWidth={1.75} />
                   </a>
                 ))}
               </div>
@@ -107,8 +108,8 @@ export default async function ContactPage() {
             >
               <div className="absolute inset-0 bg-gradient-to-b from-[rgba(15,42,58,0.1)] to-[rgba(15,42,58,0.55)]" />
               <div className="absolute bottom-4 left-[18px] flex items-center gap-2.5 text-sand">
-                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-gold text-[16px] text-blue">
-                  ◉
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-gold text-blue">
+                  <Icon name="map-pin" size={16} strokeWidth={2} />
                 </span>
                 <span className="font-sans text-[14px] font-semibold">{biz.map_label}</span>
               </div>

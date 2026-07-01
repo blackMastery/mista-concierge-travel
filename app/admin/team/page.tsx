@@ -17,7 +17,7 @@ export default async function AdminTeamPage() {
         action={<LinkButton href="/admin/team/new">+ New member</LinkButton>}
       />
       {team.length === 0 ? (
-        <EmptyState icon="☺" text="No team members yet." />
+        <EmptyState icon="smile" text="No team members yet." />
       ) : (
         <Card className="!p-0">
           <div className="divide-y divide-ink/[0.06]">

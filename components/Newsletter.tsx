@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Icon } from "@/components/icons";
 import { subscribeNewsletter } from "@/app/actions";
 
 export function Newsletter() {
@@ -21,8 +22,9 @@ export function Newsletter() {
 
   if (done) {
     return (
-      <div className="rounded-xl border border-gold/50 bg-sand/15 p-5 text-center font-sans font-medium text-sand">
-        ✓ You&apos;re on the list. Welcome aboard!
+      <div className="flex items-center justify-center gap-2 rounded-xl border border-gold/50 bg-sand/15 p-5 text-center font-sans font-medium text-sand">
+        <Icon name="check" size={16} strokeWidth={2.5} />
+        You&apos;re on the list. Welcome aboard!
       </div>
     );
   }

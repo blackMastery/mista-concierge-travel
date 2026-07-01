@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { inputCls, labelCls, btnPrimary } from "@/components/admin/ui";
+import { Icon } from "@/components/icons";
 import {
   addTourImage,
   deleteTourImage,
@@ -262,11 +263,16 @@ export function TourInclusionsEditor({
   const included = inclusions.filter((i) => i.kind === "included");
   const excluded = inclusions.filter((i) => i.kind === "excluded");
 
-  const list = (rows: TourInclusion[], symbol: string) => (
+  const list = (rows: TourInclusion[], iconName: "check" | "x") => (
     <div className="flex flex-col gap-2">
       {rows.map((i) => (
         <div key={i.id} className={rowCls}>
-          <span className="text-green">{symbol}</span>
+          <Icon
+            name={iconName}
+            size={14}
+            className={iconName === "check" ? "text-green" : "text-[#B0524A]"}
+            strokeWidth={3}
+          />
           <span className="flex-1 text-[14px] text-ink-soft">{i.text}</span>
           <ConfirmButton
             title="Remove item?"
@@ -289,11 +295,11 @@ export function TourInclusionsEditor({
       <div className="mb-4 grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
         <div>
           <p className="mb-2 font-sans text-[13px] font-semibold text-green">Included</p>
-          {list(included, "✓")}
+          {list(included, "check")}
         </div>
         <div>
           <p className="mb-2 font-sans text-[13px] font-semibold text-[#B0524A]">Not included</p>
-          {list(excluded, "×")}
+          {list(excluded, "x")}
         </div>
       </div>
       <div className="flex gap-3 max-[700px]:flex-col">

@@ -1,5 +1,6 @@
 import { requirePageAccess } from "@/lib/admin";
 import Link from "next/link";
+import { Icon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { PageHeader, Card, StatusBadge } from "@/components/admin/ui";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
@@ -51,9 +52,9 @@ export default async function EditTourPage({
               <Link
                 href={`/tours/${tour.slug}`}
                 target="_blank"
-                className="rounded-lg border border-ink/15 px-4 py-2.5 font-sans text-[13px] font-semibold text-ink no-underline hover:border-green hover:text-green"
+                className="inline-flex items-center gap-1 rounded-lg border border-ink/15 px-4 py-2.5 font-sans text-[13px] font-semibold text-ink no-underline hover:border-green hover:text-green"
               >
-                View live ↗
+                View live <Icon name="external-link" size={13} />
               </Link>
             )}
             <ConfirmButton

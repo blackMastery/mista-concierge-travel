@@ -62,7 +62,7 @@ export default async function AdminBookingsPage({
       </Suspense>
       {bookings.length === 0 ? (
         <EmptyState
-          icon="🧭"
+          icon="compass"
           text={
             status !== "all" || q
               ? "No bookings match your filters."

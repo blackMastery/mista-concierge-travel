@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { toggleFavorite } from "@/app/actions";
+import { Icon, Stars } from "@/components/icons";
 import { formatPrice } from "@/lib/format";
 
 export type TourCardData = {
@@ -77,15 +78,20 @@ export function TourCard({
             type="button"
             onClick={onToggleFav}
             aria-label={fav ? "Remove from saved" : "Save tour"}
-            className="absolute right-3 top-3 flex h-[38px] w-[38px] items-center justify-center rounded-full border-none bg-white/90 text-[17px] leading-none transition-transform hover:scale-110"
+            className="absolute right-3 top-3 flex h-[38px] w-[38px] items-center justify-center rounded-full border-none bg-white/90 leading-none transition-transform hover:scale-110"
             style={{ color: fav ? "#FF6B5B" : "#2C2C2C" }}
           >
-            {fav ? "♥" : "♡"}
+            <Icon
+              name="heart"
+              size={18}
+              fill={fav ? "currentColor" : "none"}
+              strokeWidth={fav ? 0 : 2}
+            />
           </button>
         </div>
         <div className="px-5 pb-[22px] pt-5">
           <div className="mb-[7px] flex items-center gap-1.5">
-            <span className="text-[13px] text-green">◆</span>
+            <Icon name="map-pin" size={13} className="text-green" strokeWidth={2.5} />
             <span className="font-sans text-[12.5px] font-medium uppercase tracking-[0.3px] text-green">
               {tour.location}
             </span>
@@ -94,7 +100,7 @@ export function TourCard({
             {tour.title}
           </h3>
           <div className="mb-4 flex items-center gap-2">
-            <span className="text-[14px] tracking-[1px] text-gold">★★★★★</span>
+            <Stars size={14} />
             <span className="text-[13px] text-muted">
               {tour.rating.toFixed(1)} · {tour.reviews_count} reviews
             </span>
@@ -114,7 +120,7 @@ export function TourCard({
                 )}
               </div>
             </div>
-            <span className="rounded-lg bg-green px-[18px] py-[9px] font-sans text-[13px] font-semibold text-white transition-colors group-hover:bg-green-dark">
+            <span className="shrink-0 whitespace-nowrap rounded-lg bg-green px-[18px] py-[9px] font-sans text-[13px] font-semibold text-white transition-colors group-hover:bg-green-dark">
               View Tour
             </span>
           </div>

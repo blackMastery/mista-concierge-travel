@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Stars as StarRow } from "@/components/icons";
 
 // Gold uppercase "eyebrow" label used above headings throughout the site.
 export function Eyebrow({
@@ -19,9 +20,5 @@ export function Eyebrow({
 
 // Five-star glyph row in brand gold.
 export function Stars({ className = "" }: { className?: string }) {
-  return (
-    <span className={`text-gold tracking-[1px] ${className}`} aria-hidden>
-      ★★★★★
-    </span>
-  );
+  return <StarRow className={className} />;
 }

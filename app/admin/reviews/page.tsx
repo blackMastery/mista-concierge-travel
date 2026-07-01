@@ -1,5 +1,6 @@
 import { requirePageAccess } from "@/lib/admin";
 import { PageHeader, Card, EmptyState, StatusBadge } from "@/components/admin/ui";
+import { StarRating } from "@/components/icons";
 import { ReviewControls } from "@/components/admin/LeadControls";
 import { getAdminReviews } from "@/lib/admin-queries";
 
@@ -14,7 +15,7 @@ export default async function AdminReviewsPage() {
         subtitle={`${reviews.length} review${reviews.length === 1 ? "" : "s"} · only published reviews show on the site`}
       />
       {reviews.length === 0 ? (
-        <EmptyState icon="★" text="No reviews yet." />
+        <EmptyState icon="star" text="No reviews yet." />
       ) : (
         <div className="flex flex-col gap-3">
           {reviews.map((r) => (
@@ -23,7 +24,7 @@ export default async function AdminReviewsPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-sans text-[15px] font-semibold text-ink">{r.author_name}</span>
-                    <span className="text-[13px] text-gold">{"★".repeat(Math.round(r.rating))}</span>
+                    <StarRating rating={r.rating} />
                     <StatusBadge status={r.is_published ? "published" : "hidden"} />
                   </div>
                   <div className="mt-0.5 text-[12.5px] text-muted">

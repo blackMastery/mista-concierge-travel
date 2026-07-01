@@ -44,7 +44,7 @@ export type HeroContent = {
   secondary_cta_href: string;
 };
 export const DEFAULT_HOME_HERO: HeroContent = {
-  badge_rating: "★ 4.9",
+  badge_rating: "4.9",
   badge_text: "Trusted by 2,000+ travelers",
   headline: "Escape to the heart of the Caribbean",
   description:

@@ -5,12 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const redirect = searchParams.get("redirect") || "/account";
+  const redirectTo = searchParams.get("redirect") || "/account";
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(`${origin}${redirect}`);
+    if (!error) {
+      await supabase.rpc("claim_guest_bookings");
+      return NextResponse.redirect(`${origin}${redirectTo}`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/login`);

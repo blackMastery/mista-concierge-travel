@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/SignOutButton";
+import { Icon } from "@/components/icons";
 import { ADMIN_PAGES, DASHBOARD_KEY } from "@/lib/admin-pages";
 
 function active(pathname: string, href: string) {
@@ -59,7 +60,9 @@ export function AdminSidebar({
                 : "text-[#C9CFCB] hover:bg-white/[0.05] hover:text-sand"
             }`}
           >
-            <span className="w-4 text-center text-[13px]">{item.icon}</span>
+            <span className="flex w-4 shrink-0 items-center justify-center text-gold">
+              {item.icon && <Icon name={item.icon} size={15} strokeWidth={2} />}
+            </span>
             {item.label}
           </Link>
         ))}
@@ -72,9 +75,9 @@ export function AdminSidebar({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/"
-            className="rounded-lg border border-gold/30 px-3 py-2 font-sans text-[12.5px] font-semibold text-gold-light no-underline transition-colors hover:bg-gold hover:text-[#0A0D0C]"
+            className="inline-flex items-center gap-1 rounded-lg border border-gold/30 px-3 py-2 font-sans text-[12.5px] font-semibold text-gold-light no-underline transition-colors hover:bg-gold hover:text-[#0A0D0C]"
           >
-            View site ↗
+            View site <Icon name="external-link" size={13} />
           </Link>
           <SignOutButton />
         </div>

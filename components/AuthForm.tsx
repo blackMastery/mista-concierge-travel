@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Icon } from "@/components/icons";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/account";
+  const referralCode = params.get("ref")?.trim() || undefined;
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,7 +38,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          ...(referralCode ? { referral_code: referralCode } : {}),
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
       },
     });
@@ -60,8 +65,8 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   if (checkEmail) {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-5 flex h-[64px] w-[64px] items-center justify-center rounded-full bg-green/[0.12] text-[30px] text-green">
-          ✉
+        <div className="mx-auto mb-5 flex h-[64px] w-[64px] items-center justify-center rounded-full bg-green/[0.12] text-green">
+          <Icon name="mail" size={30} strokeWidth={1.75} />
         </div>
         <h2 className="m-0 mb-2.5 font-serif text-[24px] font-semibold text-ink">
           Confirm your email

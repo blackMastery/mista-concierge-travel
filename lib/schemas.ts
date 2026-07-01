@@ -37,3 +37,46 @@ export const bookingSchema = z.object({
   specialRequests: z.string().trim().max(2000).optional(),
 });
 export type BookingValues = z.infer<typeof bookingSchema>;
+
+export const profileSchema = z.object({
+  fullName: z.string().trim().min(1, "Please enter your name.").max(200),
+  phone: z.string().trim().max(50).optional(),
+});
+
+export const travelPreferencesSchema = z.object({
+  dietary: z.string().trim().max(500).optional(),
+  mobility: z.string().trim().max(500).optional(),
+  interests: z.array(z.string().trim().max(100)).max(20).optional(),
+  room_preference: z.string().trim().max(200).optional(),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const bookingMessageSchema = z.object({
+  bookingId: z.string().uuid(),
+  body: z.string().trim().min(1, "Message cannot be empty.").max(5000),
+});
+
+export const reviewSchema = z.object({
+  tourId: z.string().uuid(),
+  bookingId: z.string().uuid().optional(),
+  rating: z.number().min(1).max(5),
+  body: z.string().trim().min(10, "Please write at least 10 characters.").max(5000),
+});
+
+export const passwordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirm: z.string(),
+  })
+  .refine((d) => d.password === d.confirm, {
+    message: "Passwords do not match.",
+    path: ["confirm"],
+  });
+
+export const emailUpdateSchema = z.object({
+  email: emailField,
+});
+
+export const claimBookingSchema = z.object({
+  reference: z.string().trim().min(1, "Enter your booking reference.").max(20),
+});

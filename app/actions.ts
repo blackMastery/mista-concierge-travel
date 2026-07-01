@@ -179,7 +179,7 @@ export async function createBookingRequest(
 
   const contactName = data.contactName;
   const contactEmail = data.contactEmail.toLowerCase();
-  const contactPhone = data.contactPhone;
+  let contactPhone = data.contactPhone;
   const travelDate = data.travelDate;
   const specialRequests = data.specialRequests || null;
 
@@ -228,13 +228,19 @@ export async function createBookingRequest(
   } = await supabase.auth.getUser();
 
   let resolvedName = contactName;
-  if (user && !resolvedName) {
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, phone")
       .eq("id", user.id)
       .maybeSingle();
-    resolvedName = (profile as { full_name: string | null } | null)?.full_name?.trim() || contactName;
+    const row = profile as { full_name: string | null; phone: string | null } | null;
+    if (!resolvedName.trim()) {
+      resolvedName = row?.full_name?.trim() || contactName;
+    }
+    if (!contactPhone.trim() && row?.phone) {
+      contactPhone = row.phone;
+    }
   }
 
   const insertPayload = {

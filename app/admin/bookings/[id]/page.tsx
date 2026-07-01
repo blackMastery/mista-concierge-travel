@@ -5,7 +5,9 @@ import { PageHeader, Card } from "@/components/admin/ui";
 import { BookingStatusSelect } from "@/components/admin/LeadControls";
 import { BookingNotesEditor } from "@/components/admin/BookingNotesEditor";
 import { BookingEmailPanel } from "@/components/admin/BookingEmailPanel";
+import { BookingMessagesPanel } from "@/components/admin/BookingMessagesPanel";
 import { getAdminBookingById, getAdminEmailTemplates } from "@/lib/admin-queries";
+import { getBookingMessages } from "@/lib/account-queries";
 import { formatPrice, formatDate } from "@/lib/format";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -29,6 +31,10 @@ export default async function AdminBookingDetailPage({
     getAdminEmailTemplates(),
   ]);
   if (!booking) notFound();
+
+  const messages = booking.user_id
+    ? await getBookingMessages(booking.id)
+    : [];
 
   const templatesActive = Object.fromEntries(
     emailTemplates.map((t) => [t.slug, t.is_active]),
@@ -159,6 +165,14 @@ export default async function AdminBookingDetailPage({
             contactEmail={booking.contact_email}
             templatesActive={templatesActive}
           />
+
+          {booking.user_id && (
+            <BookingMessagesPanel
+              bookingId={booking.id}
+              userId={booking.user_id}
+              messages={messages}
+            />
+          )}
 
           <Card>
             <h2 className="m-0 mb-4 font-serif text-[20px] font-semibold text-ink">

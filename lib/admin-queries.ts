@@ -141,6 +141,7 @@ export async function getAdminReviews(): Promise<AdminReview[]> {
 
 export type AdminBooking = {
   id: string;
+  user_id: string | null;
   travelers: number;
   travel_date: string | null;
   insurance: boolean;

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Reveal } from "@/components/Reveal";
 import { Eyebrow } from "@/components/ui";
+import { Icon, StatBig } from "@/components/icons";
 import { getTeam, getSiteContent } from "@/lib/queries";
 import type { PillarItem, CertItem } from "@/lib/format";
 import { DEFAULT_ABOUT_PAGE, resolveBlock } from "@/lib/site-content";
@@ -78,8 +79,8 @@ export default async function AboutPage() {
             {values.map((v, i) => (
               <Reveal key={v.title} delay={i * 0.07}>
                 <div className="rounded-2xl border border-sand/[0.14] bg-sand/[0.07] p-8 px-[26px] text-center">
-                  <div className="mx-auto mb-[18px] flex h-[60px] w-[60px] items-center justify-center rounded-full border border-gold/40 bg-gold/[0.16] text-[24px]">
-                    {v.icon}
+                  <div className="mx-auto mb-[18px] flex h-[60px] w-[60px] items-center justify-center rounded-full border border-gold/40 bg-gold/[0.16] text-gold">
+                    <Icon name={v.icon} size={26} strokeWidth={1.75} />
                   </div>
                   <h3 className="m-0 mb-[9px] font-sans text-[18px] font-semibold text-sand">
                     {v.title}
@@ -132,7 +133,9 @@ export default async function AboutPage() {
           <div className="flex flex-wrap items-center justify-center gap-10">
             {certs.map((c) => (
               <div key={c.label} className="flex min-w-[140px] flex-col items-center gap-2">
-                <div className="font-serif text-[26px] font-bold text-green">{c.big}</div>
+                <div className="font-serif text-[26px] font-bold text-green">
+                  <StatBig value={c.big} starSize={22} />
+                </div>
                 <div className="text-center font-sans text-[12.5px] text-muted">{c.label}</div>
               </div>
             ))}

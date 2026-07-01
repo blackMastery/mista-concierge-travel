@@ -59,7 +59,7 @@ export default async function EmailTemplatesPage() {
       )}
 
       {templates.length === 0 ? (
-        <EmptyState icon="📧" text="No templates yet. Run migration 0011_email_templates.sql to seed system templates." />
+        <EmptyState icon="mails" text="No templates yet. Run migration 0011_email_templates.sql to seed system templates." />
       ) : (
         <Card className="mb-8 !p-0">
           <div className="border-b border-ink/[0.06] px-5 py-3">

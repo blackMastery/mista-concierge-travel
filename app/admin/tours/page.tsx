@@ -20,7 +20,7 @@ export default async function AdminToursPage() {
       />
 
       {tours.length === 0 ? (
-        <EmptyState icon="✦" text="No tours yet. Create your first one." />
+        <EmptyState icon="sparkles" text="No tours yet. Create your first one." />
       ) : (
         <Card className="!p-0">
           <div className="divide-y divide-ink/[0.06]">

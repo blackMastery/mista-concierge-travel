@@ -5,11 +5,13 @@
 // `key` is what gets stored in admin_user_pages.page_key. Nested routes can
 // share a key (e.g. /admin/tours and /admin/tours/[id] both map to "tours").
 
+import type { IconName } from "@/components/icons";
+
 export type AdminPage = {
   key: string;
   label: string;
   href: string;
-  icon?: string;
+  icon?: IconName;
   superAdminOnly?: boolean;
 };
 
@@ -17,18 +19,18 @@ export type AdminPage = {
 export const DASHBOARD_KEY = "dashboard";
 
 export const ADMIN_PAGES: AdminPage[] = [
-  { key: "dashboard", label: "Dashboard", href: "/admin", icon: "▥" },
-  { key: "tours", label: "Tours", href: "/admin/tours", icon: "✦" },
-  { key: "destinations", label: "Destinations", href: "/admin/destinations", icon: "◉" },
-  { key: "testimonials", label: "Testimonials", href: "/admin/testimonials", icon: "❝" },
-  { key: "team", label: "Team", href: "/admin/team", icon: "☺" },
-  { key: "reviews", label: "Reviews", href: "/admin/reviews", icon: "★" },
-  { key: "content", label: "Site Content", href: "/admin/content", icon: "✎" },
-  { key: "bookings", label: "Bookings", href: "/admin/bookings", icon: "🧭" },
-  { key: "messages", label: "Messages", href: "/admin/messages", icon: "✉" },
-  { key: "email-templates", label: "Email templates", href: "/admin/email-templates", icon: "📧" },
-  { key: "subscribers", label: "Subscribers", href: "/admin/subscribers", icon: "@" },
-  { key: "access", label: "Admins", href: "/admin/access", icon: "👥", superAdminOnly: true },
+  { key: "dashboard", label: "Dashboard", href: "/admin", icon: "layout-dashboard" },
+  { key: "tours", label: "Tours", href: "/admin/tours", icon: "sparkles" },
+  { key: "destinations", label: "Destinations", href: "/admin/destinations", icon: "map-pin" },
+  { key: "testimonials", label: "Testimonials", href: "/admin/testimonials", icon: "quote" },
+  { key: "team", label: "Team", href: "/admin/team", icon: "smile" },
+  { key: "reviews", label: "Reviews", href: "/admin/reviews", icon: "star" },
+  { key: "content", label: "Site Content", href: "/admin/content", icon: "pencil" },
+  { key: "bookings", label: "Bookings", href: "/admin/bookings", icon: "compass" },
+  { key: "messages", label: "Messages", href: "/admin/messages", icon: "mail" },
+  { key: "email-templates", label: "Email templates", href: "/admin/email-templates", icon: "mails" },
+  { key: "subscribers", label: "Subscribers", href: "/admin/subscribers", icon: "at-sign" },
+  { key: "access", label: "Admins", href: "/admin/access", icon: "users", superAdminOnly: true },
 ];
 
 // Pages that can be granted to a regular admin: everything except the always-on

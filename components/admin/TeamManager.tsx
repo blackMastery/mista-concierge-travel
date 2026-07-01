@@ -3,6 +3,7 @@
 import { useActionState, useId, useState } from "react";
 import type { AdminUserRow } from "@/lib/database.types";
 import { GRANTABLE_PAGES } from "@/lib/admin-pages";
+import { Icon } from "@/components/icons";
 import {
   addAdmin,
   updateMember,
@@ -193,7 +194,9 @@ function MemberRow({ member }: { member: AdminMember }) {
                   defaultChecked={member.pages.includes(page.key)}
                   className="h-4 w-4 accent-green"
                 />
-                <span className="w-4 text-center text-[12px]">{page.icon}</span>
+                <span className="flex w-4 shrink-0 items-center justify-center text-green">
+                  {page.icon && <Icon name={page.icon} size={14} />}
+                </span>
                 {page.label}
               </label>
             ))}

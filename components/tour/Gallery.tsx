@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Icon } from "@/components/icons";
 
 export function Gallery({ images }: { images: string[] }) {
   const [active, setActive] = useState(-1);
@@ -41,7 +42,7 @@ export function Gallery({ images }: { images: string[] }) {
               aria-label="Close"
               className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:right-7 min-[641px]:top-6 min-[641px]:h-[46px] min-[641px]:w-[46px]"
             >
-              ×
+              <Icon name="x" size={24} />
             </button>
             <button
               onClick={(e) => {
@@ -51,7 +52,7 @@ export function Gallery({ images }: { images: string[] }) {
               aria-label="Previous"
               className="absolute bottom-20 left-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:bottom-auto min-[641px]:left-7 min-[641px]:top-1/2 min-[641px]:h-[52px] min-[641px]:w-[52px] min-[641px]:-translate-y-1/2"
             >
-              ‹
+              <Icon name="chevron-left" size={24} />
             </button>
             <motion.div
               key={active}
@@ -74,7 +75,7 @@ export function Gallery({ images }: { images: string[] }) {
               aria-label="Next"
               className="absolute bottom-20 right-3 flex h-11 w-11 items-center justify-center rounded-full border-none bg-white/[0.12] text-[24px] text-white min-[641px]:bottom-auto min-[641px]:right-7 min-[641px]:top-1/2 min-[641px]:h-[52px] min-[641px]:w-[52px] min-[641px]:-translate-y-1/2"
             >
-              ›
+              <Icon name="chevron-right" size={24} />
             </button>
             <div className="absolute bottom-4 font-sans text-[13px] text-white/80 min-[641px]:bottom-7">
               {active + 1} / {n}

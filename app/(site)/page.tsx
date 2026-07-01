@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
+import { Eyebrow, Stars } from "@/components/ui";
+import { Icon, parseRatingText, StatBig } from "@/components/icons";
 import { TourCard } from "@/components/TourCard";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { LiveBookingToast } from "@/components/LiveBookingToast";
@@ -68,7 +69,12 @@ export default async function HomePage() {
           <div className="mx-auto w-full max-w-[1280px]">
             <Reveal className="max-w-[680px]">
               <div className="mb-6 inline-flex items-center gap-2 rounded-[30px] border border-gold/50 bg-gold/[0.18] px-4 py-[7px]">
-                <span className="text-[13px] text-gold">{hero.badge_rating}</span>
+                <span className="inline-flex items-center gap-1 text-gold">
+                  <Icon name="star" size={13} fill="currentColor" strokeWidth={0} />
+                  <span className="font-sans text-[12.5px] font-medium tracking-[0.3px] text-sand">
+                    {parseRatingText(hero.badge_rating)}
+                  </span>
+                </span>
                 <span className="font-sans text-[12.5px] font-medium tracking-[0.3px] text-sand">
                   {hero.badge_text}
                 </span>
@@ -100,7 +106,7 @@ export default async function HomePage() {
           {stats.map((st) => (
             <div key={st.label} className="min-w-[40%] text-center sm:min-w-0">
               <div className="font-serif text-[24px] font-bold text-gold sm:text-[26px]">
-                {st.num}
+                <StatBig value={st.num} starSize={18} />
               </div>
               <div className="font-sans text-[12px] uppercase tracking-[0.5px] text-sand/80">
                 {st.label}
@@ -158,8 +164,8 @@ export default async function HomePage() {
             {pillars.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.07}>
                 <div className="rounded-2xl border border-sand/[0.14] bg-sand/[0.07] p-8 px-[26px] text-center transition-colors hover:bg-sand/[0.12]">
-                  <div className="mx-auto mb-[18px] flex h-[62px] w-[62px] items-center justify-center rounded-full border border-gold/40 bg-gold/[0.16] text-[26px]">
-                    {p.icon}
+                  <div className="mx-auto mb-[18px] flex h-[62px] w-[62px] items-center justify-center rounded-full border border-gold/40 bg-gold/[0.16] text-gold">
+                    <Icon name={p.icon} size={26} strokeWidth={1.75} />
                   </div>
                   <h3 className="m-0 mb-[9px] font-sans text-[18px] font-semibold text-sand">
                     {p.title}
@@ -229,7 +235,7 @@ export default async function HomePage() {
             {testimonials.map((t, i) => (
               <Reveal key={t.id} delay={i * 0.08}>
                 <div className="rounded-2xl bg-white p-[30px] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-                  <span className="text-[15px] tracking-[2px] text-gold">★★★★★</span>
+                  <Stars />
                   <p className="my-4 mb-[22px] font-serif text-[17px] italic leading-[1.55] text-ink">
                     &ldquo;{t.quote}&rdquo;
                   </p>
