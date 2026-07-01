@@ -280,7 +280,6 @@ export async function sendAdminBookingMessage(input: {
 
 export async function updateTravelerPassport(input: {
   travelerId: string;
-  passportNumber: string;
   passportExpiry: string;
   nationality: string;
   referenceCode?: string;
@@ -289,7 +288,6 @@ export async function updateTravelerPassport(input: {
 }): Promise<AccountActionResult> {
   const parsed = travelerPassportSchema.safeParse({
     travelerId: input.travelerId,
-    passportNumber: input.passportNumber,
     passportExpiry: input.passportExpiry,
     nationality: input.nationality,
     referenceCode: input.referenceCode,
@@ -316,7 +314,6 @@ export async function updateTravelerPassport(input: {
 
   const { data, error } = await supabase.rpc("update_traveler_passport", {
     p_traveler_id: parsed.data.travelerId,
-    p_passport_number: parsed.data.passportNumber,
     p_passport_expiry: parsed.data.passportExpiry,
     p_nationality: parsed.data.nationality,
     p_reference: parsed.data.referenceCode ?? null,

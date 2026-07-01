@@ -285,7 +285,9 @@ export type BookingTravelerRow = {
   traveler_type: "adult" | "child";
   child_tier_key: string | null;
   child_tier_label: string | null;
-  full_name: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
   date_of_birth: string;
   gender: "male" | "female" | "unspecified";
   passport_number: string | null;
@@ -302,7 +304,9 @@ export type BookingTravelerDetail = {
   is_primary: boolean;
   traveler_type: "adult" | "child";
   child_tier_label: string | null;
-  full_name: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
   date_of_birth: string;
   gender: "male" | "female" | "unspecified";
   passport_number: string | null;
@@ -438,7 +442,6 @@ export type Database = {
       update_traveler_passport: {
         Args: {
           p_traveler_id: string;
-          p_passport_number: string;
           p_passport_expiry: string;
           p_nationality: string;
           p_reference?: string | null;

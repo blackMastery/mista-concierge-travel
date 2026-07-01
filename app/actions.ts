@@ -156,7 +156,10 @@ export type BookingInput = {
   contactPhone: string;
   specialRequests?: string;
   travelerDetails?: {
-    fullName: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    passportNumber: string;
     dateOfBirth: string;
     gender: "male" | "female" | "unspecified";
   }[];
@@ -300,7 +303,10 @@ export async function createBookingRequest(
       traveler_type: slot.travelerType,
       child_tier_key: slot.childTierKey,
       child_tier_label: slot.childTierLabel,
-      full_name: data.travelerDetails![i].fullName,
+      first_name: data.travelerDetails![i].firstName,
+      last_name: data.travelerDetails![i].lastName,
+      phone: data.travelerDetails![i].phone,
+      passport_number: data.travelerDetails![i].passportNumber,
       date_of_birth: data.travelerDetails![i].dateOfBirth,
       gender: data.travelerDetails![i].gender,
     }));

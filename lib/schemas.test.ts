@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bookingSchema, contactSchema, newsletterEmailSchema, travelerBasicSchema } from "@/lib/schemas";
+import { bookingSchema, contactSchema, newsletterEmailSchema, travelerBasicSchema, travelerPassportSchema } from "@/lib/schemas";
 import { computeBookingTotalCents } from "@/lib/pricing";
 import type { TourPricing } from "@/lib/database.types";
 
@@ -61,8 +61,22 @@ describe("bookingSchema", () => {
       occupancyIndex: 0,
       childCounts: [0],
       travelerDetails: [
-        { fullName: "Jane Traveler", dateOfBirth: "1990-01-01", gender: "female" },
-        { fullName: "John Traveler", dateOfBirth: "1992-03-15", gender: "male" },
+        {
+          firstName: "Jane",
+          lastName: "Traveler",
+          phone: "+1 246 000 0000",
+          passportNumber: "P1234567",
+          dateOfBirth: "1990-01-01",
+          gender: "female",
+        },
+        {
+          firstName: "John",
+          lastName: "Traveler",
+          phone: "+1 246 000 0001",
+          passportNumber: "P7654321",
+          dateOfBirth: "1992-03-15",
+          gender: "male",
+        },
       ],
     });
     expect(result.success).toBe(true);
@@ -70,19 +84,30 @@ describe("bookingSchema", () => {
 });
 
 describe("travelerBasicSchema", () => {
-  it("requires full name, DOB, and gender", () => {
+  const validTraveler = {
+    firstName: "Jane",
+    lastName: "Traveler",
+    phone: "+1 246 000 0000",
+    passportNumber: "P1234567",
+    dateOfBirth: "1990-01-01",
+    gender: "female" as const,
+  };
+
+  it("requires all checkout traveler fields", () => {
     expect(
-      travelerBasicSchema.safeParse({
-        fullName: "",
-        dateOfBirth: "1990-01-01",
-        gender: "female",
-      }).success,
+      travelerBasicSchema.safeParse({ ...validTraveler, firstName: "" }).success,
     ).toBe(false);
+    expect(travelerBasicSchema.safeParse(validTraveler).success).toBe(true);
+  });
+});
+
+describe("travelerPassportSchema", () => {
+  it("requires expiry and nationality only", () => {
     expect(
-      travelerBasicSchema.safeParse({
-        fullName: "Jane Traveler",
-        dateOfBirth: "1990-01-01",
-        gender: "female",
+      travelerPassportSchema.safeParse({
+        travelerId: "123e4567-e89b-12d3-a456-426614174000",
+        passportExpiry: "2031-01-01",
+        nationality: "US",
       }).success,
     ).toBe(true);
   });

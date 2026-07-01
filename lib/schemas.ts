@@ -30,11 +30,26 @@ const isoDateField = z
 export const travelerGenderSchema = z.enum(["male", "female", "unspecified"]);
 
 export const travelerBasicSchema = z.object({
-  fullName: z
+  firstName: z
     .string()
     .trim()
-    .min(1, "Please enter the traveler's full name.")
-    .max(200),
+    .min(1, "Please enter the traveler's first name.")
+    .max(100),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Please enter the traveler's last name.")
+    .max(100),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Please enter a phone number.")
+    .max(50),
+  passportNumber: z
+    .string()
+    .trim()
+    .min(1, "Please enter a passport number.")
+    .max(50),
   dateOfBirth: isoDateField,
   gender: travelerGenderSchema,
 });
@@ -42,11 +57,6 @@ export type TravelerBasicValues = z.infer<typeof travelerBasicSchema>;
 
 export const travelerPassportSchema = z.object({
   travelerId: z.string().uuid("Invalid traveler."),
-  passportNumber: z
-    .string()
-    .trim()
-    .min(1, "Please enter a passport number.")
-    .max(50),
   passportExpiry: isoDateField,
   nationality: z.string().trim().min(1, "Please select a nationality.").max(100),
   referenceCode: z.string().trim().max(20).optional(),

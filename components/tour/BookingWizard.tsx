@@ -18,7 +18,7 @@ import {
   computePeopleCount,
   type BookingSelection,
 } from "@/lib/pricing";
-import { expandTravelerSlots, type TravelerBasicInput } from "@/lib/travelers";
+import { expandTravelerSlots, splitFullName, formatTravelerName, type TravelerDetailsInput } from "@/lib/travelers";
 import type { TourPricing, PaymentTerms } from "@/lib/database.types";
 
 function todayISO(): string {
@@ -52,7 +52,6 @@ export function BookingWizard({
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("");
   const [occIdx, setOccIdx] = useState(0);
-  const [adults, setAdults] = useState(() => occupancy[0]?.occupants ?? 2);
   const [childCounts, setChildCounts] = useState<number[]>(() =>
     childTiers.map(() => 0),
   );
@@ -65,7 +64,7 @@ export function BookingWizard({
   const [referenceCode, setReferenceCode] = useState("");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
-  const [travelerDetails, setTravelerDetails] = useState<TravelerBasicInput[]>([]);
+  const [travelerDetails, setTravelerDetails] = useState<TravelerDetailsInput[]>([]);
 
   const selection: BookingSelection = {
     occupancyIndex: hasTiers ? occIdx : null,
@@ -86,14 +85,20 @@ export function BookingWizard({
   }, [hasTiers, travelerSlots.length, occIdx, childCounts.join(",")]);
 
   useEffect(() => {
-    if (!hasTiers || !contactName.trim()) return;
+    if (!hasTiers) return;
+    const { firstName, lastName } = splitFullName(contactName);
     setTravelerDetails((prev) => {
       if (prev.length === 0) return prev;
       const next = [...prev];
-      next[0] = { ...next[0], fullName: contactName.trim() };
+      next[0] = {
+        ...next[0],
+        firstName: firstName || next[0].firstName,
+        lastName: lastName || next[0].lastName,
+        phone: contactPhone.trim() || next[0].phone,
+      };
       return next;
     });
-  }, [contactName, hasTiers]);
+  }, [contactName, contactPhone, hasTiers]);
 
   const totalCents = computeBookingTotalCents(pricing, basePriceCents, selection);
   const depositCents = computeDepositCents(paymentTerms, depositOpen, people);
@@ -134,14 +139,24 @@ export function BookingWizard({
   function validateTravelersStep(): string | null {
     for (let i = 0; i < travelerSlots.length; i++) {
       const t = travelerDetails[i];
-      if (!t?.fullName.trim()) {
-        return `Please enter the full name for ${travelerSlots[i].label}.`;
+      const label = travelerSlots[i].label;
+      if (!t?.firstName.trim()) {
+        return `Please enter the first name for ${label}.`;
+      }
+      if (!t?.lastName.trim()) {
+        return `Please enter the last name for ${label}.`;
+      }
+      if (!t?.phone.trim()) {
+        return `Please enter a phone number for ${label}.`;
+      }
+      if (!t?.passportNumber.trim()) {
+        return `Please enter a passport number for ${label}.`;
       }
       if (!t.dateOfBirth) {
-        return `Please enter the date of birth for ${travelerSlots[i].label}.`;
+        return `Please enter the date of birth for ${label}.`;
       }
       if (!t.gender) {
-        return `Please select gender for ${travelerSlots[i].label}.`;
+        return `Please select gender for ${label}.`;
       }
     }
     return null;
@@ -206,7 +221,10 @@ export function BookingWizard({
         specialRequests: specialRequests.trim() || undefined,
         travelerDetails: hasTiers
           ? travelerDetails.map((t) => ({
-              fullName: t.fullName.trim(),
+              firstName: t.firstName.trim(),
+              lastName: t.lastName.trim(),
+              phone: t.phone.trim(),
+              passportNumber: t.passportNumber.trim(),
               dateOfBirth: t.dateOfBirth,
               gender: t.gender,
             }))
@@ -313,11 +331,7 @@ export function BookingWizard({
                   <label className={labelCls}>Room occupancy</label>
                   <select
                     value={occIdx}
-                    onChange={(e) => {
-                      const idx = Number(e.target.value);
-                      setOccIdx(idx);
-                      setAdults(occupancy[idx]?.occupants ?? 1);
-                    }}
+                    onChange={(e) => setOccIdx(Number(e.target.value))}
                     className={`${fieldCls} cursor-pointer bg-white`}
                   >
                     {occupancy.map((t, i) => (
@@ -326,16 +340,6 @@ export function BookingWizard({
                       </option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Adults</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={adults}
-                    readOnly
-                    className={`${fieldCls} bg-cream/50`}
-                  />
                 </div>
                 {childTiers.map((c, i) => (
                   <div key={c.key}>
@@ -443,8 +447,8 @@ export function BookingWizard({
               Traveler details
             </h2>
             <p className="m-0 text-[13px] leading-[1.5] text-muted">
-              Passport details can be added after booking from your account or
-              track-booking page.
+              Enter details for each person travelling. Passport expiry and
+              nationality can be added after booking.
             </p>
             <div className="flex flex-col gap-3">
               {travelerSlots.map((slot, i) => (
@@ -503,6 +507,26 @@ export function BookingWizard({
                 <div className="border-t border-ink/[0.08] pt-3 text-[14px]">
                   <span className="text-muted">Special requests</span>
                   <p className="m-0 mt-1 text-ink-soft">{specialRequests}</p>
+                </div>
+              )}
+              {hasTiers && travelerDetails.length > 0 && (
+                <div className="border-t border-ink/[0.08] pt-3 text-[14px]">
+                  <span className="text-muted">Travelers</span>
+                  <ul className="m-0 mt-2 list-none space-y-1.5 p-0">
+                    {travelerSlots.map((slot, i) => {
+                      const t = travelerDetails[i];
+                      if (!t) return null;
+                      return (
+                        <li key={slot.position} className="text-ink-soft">
+                          <span className="font-semibold text-ink">
+                            {formatTravelerName(t.firstName, t.lastName)}
+                          </span>
+                          {" · "}
+                          {slot.label}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
               )}
             </div>

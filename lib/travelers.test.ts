@@ -5,6 +5,8 @@ import {
   validateTravelerAgeForSlot,
   validatePassportExpiry,
   maskPassportNumber,
+  formatTravelerName,
+  splitFullName,
 } from "@/lib/travelers";
 import type { TourPricing } from "@/lib/database.types";
 
@@ -101,5 +103,24 @@ describe("validatePassportExpiry", () => {
 describe("maskPassportNumber", () => {
   it("masks all but last four characters", () => {
     expect(maskPassportNumber("AB1234567")).toBe("•••4567");
+  });
+});
+
+describe("formatTravelerName", () => {
+  it("joins first and last name", () => {
+    expect(formatTravelerName("Jane", "Traveler")).toBe("Jane Traveler");
+  });
+});
+
+describe("splitFullName", () => {
+  it("splits on first space", () => {
+    expect(splitFullName("Jane Marie Traveler")).toEqual({
+      firstName: "Jane",
+      lastName: "Marie Traveler",
+    });
+  });
+
+  it("handles single name", () => {
+    expect(splitFullName("Jane")).toEqual({ firstName: "Jane", lastName: "" });
   });
 });

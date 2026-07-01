@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Json } from "@/lib/database.types";
 import type { BookingDetail as BookingDetailType } from "@/lib/account-queries";
 import { formatPrice, formatDate } from "@/lib/format";
-import { maskPassportNumber } from "@/lib/travelers";
+import { maskPassportNumber, formatTravelerName } from "@/lib/travelers";
 import { countryLabel } from "@/lib/countries";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -86,14 +86,17 @@ export function BookingDetailView({
                     key={t.id}
                     className="rounded-lg bg-cream/50 px-3 py-2 text-[13px]"
                   >
-                    <div className="font-semibold text-ink">{t.full_name}</div>
+                    <div className="font-semibold text-ink">
+                      {formatTravelerName(t.first_name, t.last_name)}
+                    </div>
                     <div className="text-muted">
                       {t.traveler_type === "child"
                         ? t.child_tier_label ?? "Child"
                         : "Adult"}
                       {" · "}
                       DOB {formatDate(t.date_of_birth)}
-                      {t.passport_complete && t.passport_number && (
+                      {t.phone ? ` · ${t.phone}` : ""}
+                      {t.passport_number && (
                         <>
                           {" · "}
                           Passport {maskPassportNumber(t.passport_number)}

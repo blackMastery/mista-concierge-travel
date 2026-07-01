@@ -141,11 +141,13 @@ export default async function AdminBookingDetailPage({
                 Traveler manifest
               </h2>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] border-collapse text-left text-[13px]">
+                <table className="w-full min-w-[900px] border-collapse text-left text-[13px]">
                   <thead>
                     <tr className="border-b border-ink/[0.08] text-muted">
                       <th className="py-2 pr-3 font-semibold">#</th>
-                      <th className="py-2 pr-3 font-semibold">Name</th>
+                      <th className="py-2 pr-3 font-semibold">First</th>
+                      <th className="py-2 pr-3 font-semibold">Last</th>
+                      <th className="py-2 pr-3 font-semibold">Phone</th>
                       <th className="py-2 pr-3 font-semibold">Type</th>
                       <th className="py-2 pr-3 font-semibold">DOB</th>
                       <th className="py-2 pr-3 font-semibold">Gender</th>
@@ -155,13 +157,12 @@ export default async function AdminBookingDetailPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {travelers.map((t) => {
-                      const passportComplete =
-                        t.passport_number && t.passport_expiry && t.nationality;
-                      return (
+                    {travelers.map((t) => (
                         <tr key={t.id} className="border-b border-ink/[0.06]">
                           <td className="py-3 pr-3">{t.position}</td>
-                          <td className="py-3 pr-3 font-medium">{t.full_name}</td>
+                          <td className="py-3 pr-3 font-medium">{t.first_name}</td>
+                          <td className="py-3 pr-3 font-medium">{t.last_name}</td>
+                          <td className="py-3 pr-3">{t.phone ?? "—"}</td>
                           <td className="py-3 pr-3 capitalize">
                             {t.traveler_type === "child"
                               ? t.child_tier_label ?? "Child"
@@ -172,27 +173,32 @@ export default async function AdminBookingDetailPage({
                           </td>
                           <td className="py-3 pr-3 capitalize">{t.gender}</td>
                           <td className="py-3 pr-3">
-                            {passportComplete ? (
-                              t.passport_number
-                            ) : (
-                              <span className="rounded-md bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-gold-deep">
-                                Incomplete
+                            {t.passport_number ?? (
+                              <span className="rounded-md bg-coral/[0.12] px-2 py-0.5 text-[11px] font-semibold text-coral">
+                                Missing
                               </span>
                             )}
                           </td>
                           <td className="py-3 pr-3">
-                            {t.passport_expiry
-                              ? formatDate(t.passport_expiry)
-                              : "—"}
+                            {t.passport_expiry ? (
+                              formatDate(t.passport_expiry)
+                            ) : (
+                              <span className="rounded-md bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-gold-deep">
+                                Needed
+                              </span>
+                            )}
                           </td>
                           <td className="py-3">
-                            {t.nationality
-                              ? countryLabel(t.nationality)
-                              : "—"}
+                            {t.nationality ? (
+                              countryLabel(t.nationality)
+                            ) : (
+                              <span className="rounded-md bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-gold-deep">
+                                Needed
+                              </span>
+                            )}
                           </td>
                         </tr>
-                      );
-                    })}
+                    ))}
                   </tbody>
                 </table>
               </div>

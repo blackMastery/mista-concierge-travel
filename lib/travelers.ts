@@ -11,11 +11,44 @@ export type TravelerSlot = {
   label: string;
 };
 
-export type TravelerBasicInput = {
-  fullName: string;
+export type TravelerDetailsInput = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  passportNumber: string;
   dateOfBirth: string;
   gender: TravelerGender;
 };
+
+/** @deprecated Use TravelerDetailsInput */
+export type TravelerBasicInput = TravelerDetailsInput;
+
+export function formatTravelerName(firstName: string, lastName: string): string {
+  return [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+}
+
+export function splitFullName(name: string): { firstName: string; lastName: string } {
+  const trimmed = name.trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+  const space = trimmed.indexOf(" ");
+  if (space === -1) return { firstName: trimmed, lastName: "" };
+  return {
+    firstName: trimmed.slice(0, space),
+    lastName: trimmed.slice(space + 1).trim(),
+  };
+}
+
+export const emptyTravelerDetails = (): TravelerDetailsInput => ({
+  firstName: "",
+  lastName: "",
+  phone: "",
+  passportNumber: "",
+  dateOfBirth: "",
+  gender: "unspecified",
+});
+
+/** @deprecated Use emptyTravelerDetails */
+export const emptyTravelerBasic = emptyTravelerDetails;
 
 const ADULT_MIN_AGE = 12;
 const CHILD_MAX_AGE = 17;
